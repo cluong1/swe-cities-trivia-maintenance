@@ -1,16 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leaderboard</title>
+    <style>
+        .leaderboard-box {
+            border: 2px solid #333;
+            padding: 15px;
+            width: 300px;
+            margin: 20px auto;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .pages {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .pages a {
+            margin: 0 5px;
+            text-decoration: none;
+            padding: 5px 10px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #333;
+        }
+        .pages a.active {
+            background-color: #333;
+            color: white;
+        }
+    </style>
 </head>
 <body>
     <h1>Leaderboard</h1>
-    <ul>
-        <% players.forEach(player => { %>
-            <li><strong><%= player.name %></strong>: <%= player.score %></li>
-        <% }); %>
-    </ul>
+
+    <div class="leaderboard-box">
+        <ol start="<%= (currentPage - 1) * 30 + 1 %>">
+            <% players.forEach(player => { %>
+                <li><strong><%= player.username %></strong>: <%= player.score %> points</li>
+            <% }) %>
+        </ol>
+
+        <div class="pages">
+            <% if (currentPage > 1) { %>
+                <a href="/leaderboard?page=<%= currentPage - 1 %>">Prev</a>
+            <% } %>
+
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <a href="/leaderboard?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+            <% } %>
+
+            <% if (currentPage < totalPages) { %>
+                <a href="/leaderboard?page=<%= currentPage + 1 %>">Next</a>
+            <% } %>
+        </div>
+    </div>
 </body>
 </html>

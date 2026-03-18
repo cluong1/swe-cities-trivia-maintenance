@@ -42,74 +42,31 @@ app.get("/", (req, res) => {
     });
 });
 
-app.get("/leaderboard", (req, res) => {
-    res.render("leaderboard", { 
-        players: [
-            { name: "Alice", score: 150 },
-            { name: "Bob", score: 120 },
-            { name: "Charlie", score: 100 }
-        ]
-    });
-});
-
-app.get("/recipes", (req, res) => {
-    const categories = ["Chicken", "Beef", "Tofu", "Grains"];
-    let recipesByCategory = {};
-
-    let count = 0;
-    categories.forEach(category => {
-        db.query("SELECT * FROM Recipes WHERE main_protein = ?", [category], (err, results) => {
-            if(err) throw err;
-            recipesByCategory[category] = results;
-            count++;
-            if(count === categories.length){
-                res.render("recipes", { recipesByCategory });
-            }
+app.get("/top5", (req, res) => {
+    db.query("SELECT username, score FROM scores ORDER BY score DESC LIMIT 50 OFFSET 0", (err, results) => {
+        res.render("leaderboard", { 
+            players: results
         });
     });
 });
 
-app.get("/add_recipes", (req, res) => {
-    db.query("SELECT DISTINCT ingredient_name FROM Ingredients", (err, ingredients) => {
-        if(err) throw err;
-        res.render("add_recipes", { ingredients });
+app.get("/leaderboard", (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = 30; 
+    const offset = (page - 1) * pageSize;
+
+    db.query("SELECT username, score FROM scores ORDER BY score DESC LIMIT ? OFFSET ?", [pageSize, offset], (err, results) => {
+        db.query("SELECT COUNT(*) AS count FROM scores", (err2, countResult) => {
+
+            const totalEntries = countResult[0].count;
+            const totalPages = Math.ceil(totalEntries / pageSize);
+
+            res.render("leaderboard", { 
+                players: results,
+                currentPage: page,
+                totalPages
+            });
+        });
     });
 });
 
-app.post("/add_recipes", express.urlencoded({ extended: true }), (req, res) => {
-    const { name, description, prep_time_minutes, main_protein, ingredients, steps } = req.body;
-
-    // Insert recipe
-    db.query(
-        "INSERT INTO Recipes (name, description, prep_time_minutes, main_protein) VALUES (?, ?, ?, ?)",
-        [name, description, prep_time_minutes, main_protein],
-        (err, result) => {
-            if (err) throw err;
-
-            const recipeId = result.insertId;
-
-            // Split ingredients and insert into Ingredients table
-            const ingredientList = ingredients.split(',').map(i => i.trim()).filter(i => i);
-            ingredientList.forEach(item => {
-                // Optional: separate quantity and name if you want to store them separately
-                db.query(
-                    "INSERT INTO Ingredients (recipe_id, ingredient_name) VALUES (?, ?)",
-                    [recipeId, item],
-                    err => { if (err) throw err; }
-                );
-            });
-
-            // Split steps and insert into Steps table
-            const stepList = steps.split(',').map(s => s.trim()).filter(s => s);
-            stepList.forEach((instruction, index) => {
-                db.query(
-                    "INSERT INTO Steps (recipe_id, step_number, instruction) VALUES (?, ?, ?)",
-                    [recipeId, index + 1, instruction],
-                    err => { if (err) throw err; }
-                );
-            });
-
-            res.redirect("/recipes");
-        }
-    );
-});
