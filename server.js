@@ -42,25 +42,13 @@ app.get("/", (req, res) => {
     });
 });
 
-app.get("/recipe/:id", (req, res) => {
-    const recipeId = req.params.id;
-
-    db.query("SELECT * FROM Recipes WHERE recipe_id = ?", [recipeId], (err, recipeResult) => {
-        if (err) throw err;
-
-        db.query("SELECT * FROM Ingredients WHERE recipe_id = ?", [recipeId], (err, ingredientResult) => {
-            if (err) throw err;
-
-            db.query("SELECT * FROM Steps WHERE recipe_id = ? ORDER BY step_number", [recipeId], (err, stepResult) => {
-                if (err) throw err;
-
-                res.render("recipe", {
-                    recipe: recipeResult[0],
-                    ingredients: ingredientResult,
-                    steps: stepResult
-                });
-            });
-        });
+app.get("/leaderboard", (req, res) => {
+    res.render("leaderboard", { 
+        players: [
+            { name: "Alice", score: 150 },
+            { name: "Bob", score: 120 },
+            { name: "Charlie", score: 100 }
+        ]
     });
 });
 
