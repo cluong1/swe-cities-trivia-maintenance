@@ -35,6 +35,21 @@ app.listen(3000, () => {
     console.log("Server running on http://localhost:3000");
 });
 
+app.get("/", (req, res) => {
+    res.render("home");
+});
+
+app.get("/daily", (req, res) => {
+    res.render("daily");
+});
+
+app.get("/practice", (req, res) => {
+    res.render("practice");
+});
+
+app.get("/account", (req, res) => {
+    res.render("account");
+});
 
 app.get("/leaderboard", (req, res) => {
     const page = parseInt(req.query.page) || 1;
