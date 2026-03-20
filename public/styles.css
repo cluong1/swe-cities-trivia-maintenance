@@ -1,0 +1,33 @@
+#scoreInformation{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    gap: 10px; /* space between items */
+}
+
+#quizContent{
+    display: flex;
+    flex-direction:column;
+    justify-content: space-around;
+    align-items: center;
+}
+
+#answers{
+    padding: 10px 20px;
+    font-size: 1rem;
+}
+
+.HP {
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+.home {
+    display: block;
+    margin-bottom: 20px;
+    text-decoration: none;
+    background-color: green;
+    width: 100%;
+}
