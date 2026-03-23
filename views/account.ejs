@@ -26,14 +26,98 @@
         </div>
     </header>
     <div class="account-box">
-        <div class= "user-header">
-            <img src="pics/account.jpg" alt="Account Image" class = "account-image">
-            <h2>Username</h2>
+        <div class="user-header">
+            <img src="/pics/account.jpg" alt="Account Image" class="account-image">
         </div>
-        <p>Total Score: 10 points</p>
-        <p>Total Quizzes: 5</p>
-        <p>Rank: 10th</p>
-        <button>Log Out</button>
+
+        <% if (!user) { %>
+
+        <section id="intro-creation">
+            <h2>To begin, let's create an account.</h2>
+        </section>
+
+        <div id="account-submission">
+            <form id="accountSubmissionForm">
+                <div class="form-group">
+                    <label>Username:</label>
+                    <input id="createUsername" type="text" name="username" placeholder="Enter Username" autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input id="createPassword" type="password" name="password" placeholder="Enter Password" autocomplete="off">
+                </div>
+
+                <button id="submitAccount" type="submit">Submit</button>
+            </form>
+        </div>
+
+        <div id="account-login">
+            <h2>Already have an account? Let's login.</h2>
+            <form id="accountLoginForm">
+                <div class="form-group">
+                    <label>Username:</label>
+                    <input id="loginUsername" type="text" name="username" placeholder="Enter Username" autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input id="loginPassword" type="password" name="password" placeholder="Enter Password" autocomplete="off">
+                </div>
+
+                <button id="submitLogin" type="submit">Submit</button>
+            </form>
+        </div>
+
+        <% } else { %>
+
+        <input type="hidden" id="currentUsername" value="<%= user %>">
+
+        <div id="user-info">
+            <p>Current User: <%= user %></p>
+
+            <form action="/logout" method="POST">
+                <button type="submit">Log Out</button>
+            </form>
+
+            <% if (userPic) { %>
+                <img src="<%= userPic %>" alt="Profile Picture" style="width:50px;height:50px;border-radius:50%;">
+            <% } %>
+        </div>
+
+        <section id="friends">
+            <h2>Friends List</h2>
+            <select id="friendsDropdown">
+                <option disabled selected>-- Select a friend --</option>
+            </select>
+            <button id="refreshFriends">Refresh Friends</button>
+        </section>
+
+        <section id="friend-requests">
+            <h2>Friend Requests</h2>
+            <button id="refreshRequests">Refresh Requests</button>
+            <ul id="pendingRequests"></ul>
+        </section>
+
+        <section id="send-request">
+            <h2>Send a friend request</h2>
+            <form id="sendFriendForm">
+                <input id="friendUsername" type="text" placeholder="Enter username" autocomplete="off">
+                <button id="sendFriendRequest" type="submit">Send Request</button>
+            </form>
+        </section>
+
+        <section id="chat">
+            <h2>Chat</h2>
+            <div id="chatWindow"></div>
+
+            <form id="sendMessageForm">
+                <input id="chatMessage" type="text" placeholder="Type a message" autocomplete="off">
+                <button id="sendChatMessage" type="submit">Send</button>
+            </form>
+        </section>
+
+        <% } %>
     </div>
 
 </body>
