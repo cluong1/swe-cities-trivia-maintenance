@@ -39,9 +39,52 @@ function initializeTables(db) {
         )
     `;
 
+    const usersTable = `
+        CREATE TABLE IF NOT EXISTS users (
+            Username VARCHAR(255) UNIQUE PRIMARY KEY,
+            Password VARCHAR(255) NOT NULL,
+            Points INT,
+            IsAdmin binary,
+            LastCompletedDaily Date
+        )
+    `;
+
+    const quizzesTable =`
+        CREATE TABLE IF NOT EXISTS quizzes (
+            QuizID INT AUTO_INCREMENT PRIMARY KEY,
+            Date DATE,
+            TITLE VARCHAR(255)
+        )
+    `;
+
+    const questionsTable=`
+        CREATE TABLE IF NOT EXISTS questions (
+            QuestionID INT AUTO_INCREMENT PRIMARY KEY,
+            Question VARCHAR(255),
+            Answer VARCHAR(255),
+            Points INT,
+            Type VARCHAR(255)
+        )
+    `;
+
     db.query(scoresTable, (err) => {
         if (err) throw err;
         console.log("Scores table ensured");
+    });
+
+    db.query(usersTable, (err) =>{
+        if(err) throw err;
+        console.log("Users table ensured.");
+    });
+
+    db.query(questionsTable, (err) =>{
+        if(err) throw err;
+        console.log("Questions table ensured.");
+    });
+
+    db.query(quizzesTable, (err) =>{
+        if(err) throw err;
+        console.log("Quiz table ensured.");
     });
 }
 
