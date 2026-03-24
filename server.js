@@ -6,6 +6,21 @@ const mysql = require("mysql2");
 const path = require("path");
 let db; // declare in outer scope
 
+const bcrypt = require('bcrypt');
+const session = require("express-session");
+
+app.use(session({
+    secret: "secret-key",
+    resave:false,
+    saveUninitialized:false
+}));
+
+app.use((req, res, next) => {
+    res.locals.user = req.session.user || null;
+    res.locals.userPic = req.session.userPic || null;
+    next();
+});
+
 const dbInit = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
