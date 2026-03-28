@@ -128,10 +128,23 @@ app.set("views", path.join(__dirname, "views"));
 
 app.use(express.static("public"));
 
-app.get("/quiz", (req, res) => {
-    res.render("quiz", { 
-    });
+
+
+
+
+
+app.get("/quiz/:id", (req, res) => {
+    const region = req.params.id;
+    
+    res.render("quiz",{region:region});
+    
 });
+
+
+
+
+
+
 app.get("/", (req, res) => {
     res.render("home");
 });
@@ -141,7 +154,13 @@ app.get("/daily", (req, res) => {
 });
 
 app.get("/practice", (req, res) => {
-    res.render("practice");
+    const query = "SELECT DISTINCT Region FROM Questions"
+
+    db.query(query, (err, results) => {
+        if (err) throw err;
+        res.render("practice",{regions: results});
+    });
+    
 });
 
 app.get("/account", (req, res) => {

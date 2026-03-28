@@ -25,7 +25,21 @@
             </nav>
         </div>
     </header>
-    <a href = "/quiz"> Do the quiz? </a>
+    <ul>
+        <% regions.forEach(region => { %>
+            <li>
+                <a href = "/quiz/<%= region.Region %>">
+                    
+                    <%= region.Region.replace( '_',' ') %>
+                </a>
+            </li>
+
+        <% }) %>
+        
+        
+       
+    </ul>
+    
 
 </body>
 </html>
