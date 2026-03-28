@@ -131,18 +131,28 @@ app.use(express.static("public"));
 
 
 
+app.get("/quiz/:region", (req, res) => {
+    const region = req.params.region;
 
+    const query = "SELECT * FROM Questions WHERE Region = ?";
+    const query2 = "SELECT Answer FROM Questions"
 
-
-app.get("/quiz/:id", (req, res) => {
-    const region = req.params.id;
-
-    res.render("quiz",{region:region});
+    db.query(query, [region], (err, results) => {
+        if (err) throw err;
+        db.query(query2,(err,results2)=>{
+            if(err) throw err;
+            res.render("quiz",{
+                region:        region,
+                questionsTable:results,
+                allAnswers:    results2
+            });
+        
+        });
+        
+    });
+    
     
 });
-
-
-
 
 
 

@@ -13,11 +13,15 @@
     
     
     <div id = "quizContent">
+        
 
         <div id = "heading">
             <h1>
                 <%= region.replace( '_',' ') %> Quiz
             </h1>
+
+    </ul>
+            
         </div>
         <div id = "scoreInformation">
                 
@@ -53,7 +57,21 @@
         </div>
     
      
-    <script src="/javascript/quiz.js"></script>
     
+    <script>
+        const questionsJson = <%- JSON.stringify(questionsTable) %>;
+        //this is how the questions are put into an array of arrays with[][Question, Answer]
+        questions=[];
+        for(let i =0; i<questionsJson.length;i++){
+            questions[i] = [questionsJson[i].Question,questionsJson[i].Answer];
+        }
+
+        const citiesJson = <%- JSON.stringify(allAnswers) %>;
+        cities =[];
+        for(let i = 0 ; i < citiesJson.length;i++){
+            cities[i]= [citiesJson[i].Answer];
+        }
+    </script>
+    <script src="/javascript/quiz.js"></script>
 </body>
 </html>

@@ -6,37 +6,12 @@
 // that specific answerr for the qwuestion and three random ansers of the same type.
 // we can also 
 
-const questions = [
-  ["What is the capital of the USA?", "Washington, D.C."],
-  ["What is the most populous city in Europe?", "Istanbul"],
-  ["What is the capital of India?", "New Delhi"],
-  ["Which city here would you nuke?", "Paris"],
-  ["What is the capital of Germany?", "Berlin"],
-  ["What us city is named Austin", "Austin"],
-  ["What is the capital of Canada?", "Ottawa"],
-  ["What is the capital of Finland?", "Helsinki"],
-  ["What is the capital of Japan?", "Tokyo"],
-  ["What is the capital of Spain?", "Madrid"]
-];
+
+
 
 //this represents the incorect answers i dont know exactly how to do this with
 //my sql but we copuld probably jujst take in a speciific amount of things
-const cities = [
-  // --- New Capitals (28 total) ---
-  "Amsterdam", "Brussels", "Copenhagen", "Dublin", "Lisbon",
-  "Prague", "Budapest", "Warsaw", "Athens", "Zurich",
-  "Reykjavik", "Tallinn", "Riga", "Vilnius", "Sofia",
-  "Bucharest", "Belgrade", "Zagreb", "Ljubljana", "Bratislava",
-  "Doha", "Abu Dhabi", "Kuala Lumpur", "Singapore", "Hanoi",
-  "Manila", "Lima", "Santiago",
 
-  // --- Non-Capital Cities (25 total) ---
-  "New York", "Los Angeles", "Chicago", "Houston", "Toronto",
-  "Vancouver", "Sydney", "Melbourne", "São Paulo", "Rio de Janeiro",
-  "Shanghai", "Mumbai", "Bangalore", "Istanbul", "Dubai",
-  "Johannesburg", "Cape Town", "Barcelona", "Munich", "Milan",
-  "Lyon", "Manchester", "Busan", "Osaka", "Auckland"
-];
 
 //ABOVE THIS WILL BE REPLACED BY SQL
 //when im done im goiung to mnake variabales for all the getelemebnt by id so its cleaner
@@ -112,8 +87,10 @@ function nextQuestion() {
 function setAnswers(index){
     //This gets a number 1-4 for the position of the correct ans
     const ans = Math.floor(Math.random() * 4) + 1;
+    //Find the index of the correct answer to exclude it from incorrect answers
+    const correctCityIndex = cities.indexOf(questions[index][1]);
     //this selects the other three incoredct answeres
-    const inccorects = getThreeUnique(0,50);
+    const inccorects = getThreeUnique(0, cities.length - 1, correctCityIndex);
     const inc1= inccorects[0];
     const inc2= inccorects[1];
     const inc3 = inccorects[2];
@@ -132,9 +109,11 @@ function setAnswers(index){
 }
 
 //this is to get three numbers that are not the same so that i can get gunique incorect answers
-function getThreeUnique(min, max) {
+function getThreeUnique(min, max, excludeIndex) {
   const arr = [];
-  for (let i = min; i <= max; i++) arr.push(i);
+  for (let i = min; i <= max; i++) {
+    if (i !== excludeIndex) arr.push(i);
+  }
   // shuffle
   arr.sort(() => Math.random() - 0.5);
 
