@@ -9,6 +9,7 @@ let db; // declare in outer scope
 const bcrypt = require('bcrypt');
 const session = require("express-session");
 
+app.use(express.json());
 app.use(session({
     secret: "secret-key",
     resave:false,
@@ -98,6 +99,13 @@ function initializeTables(db) {
             ON DELETE CASCADE
             )
     `;
+    //this is for testing
+    const fakeTable=`
+        CREATE TABLE IF NOT EXISTS fakeTable(
+            ID INT AUTO_INCREMENT PRIMARY KEY,
+            Value INT
+            )
+    `;
 
     db.query(scoresTable, (err) => {
         if (err) throw err;
@@ -122,6 +130,11 @@ function initializeTables(db) {
     db.query(quizQuestionsTable, (err) =>{
         if(err) throw err;
         console.log("QuizQuestions table ensured.");
+    });
+
+    db.query(fakeTable, (err) => {
+        if (err) throw err;
+        console.log("fake table ensured");
     });
 }
 
@@ -226,3 +239,26 @@ app.get("/leaderboard", (req, res) => {
     });
 });
 
+app.post("/api/save-score", (req, res) => {
+    const query = "INSERT INTO FakeTable (Value) VALUES (?)";
+    
+    const answerArray = req.body.answerArray;
+    const questions = req.body.questions;
+    const timesArray = req.body.timesArray;
+    
+    let score = 0;
+    for(let i = 0; i<answerArray.length; i++){
+        if(answerArray[i] === questions[i][1] ){
+            score = score +( 10 * timesArray[i]);
+        }
+    }
+    
+    //const score = req.body.score;
+    db.query(query,[score],(err,result)=>{
+        if(err){
+            console.error(err);
+            return res.status(500).send("Database Error");
+        }
+        res.json({ message: "Score saved!" });
+    });
+});
