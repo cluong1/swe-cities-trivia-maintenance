@@ -164,9 +164,11 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.static("public"));
 
 
+//Im not acsesing the quizzes using there id but instead there title which may be bad.
+app.get("/quiz/:name", (req, res) => {
+    const name = req.params.name;
 
-app.get("/quiz/:id", (req, res) => {
-    const id = req.params.id;
+    const query0 = "SELECT QuizID, Title FROM Quizzes WHERE Title = ?";
 
     const query1 = `
     SELECT qb.*
@@ -175,24 +177,29 @@ app.get("/quiz/:id", (req, res) => {
     ON qq.QuestionID = qb.QuestionID
     WHERE qq.QuizID = ?
     ORDER BY qq.QuestionOrder;
-    `
+    `;
+
     const query2 = "SELECT Answer FROM Questions";
 
-    db.query(query1, [id], (err, results1) => {
+    db.query(query0, [name], (err, quizResult) => {
         if (err) throw err;
-        db.query(query2,(err,results2)=>{
-            if(err) throw err;
-            res.render("quiz",{
-                id:id,
-                questionsTable:results1,
-                allAnswers:    results2
+        if (quizResult.length === 0) return res.status(404).send("Quiz not found");
+
+        const quiz = quizResult[0];
+
+        db.query(query1, [quiz.QuizID], (err, results1) => {
+            if (err) throw err;
+            db.query(query2, (err, results2) => {
+                if (err) throw err;
+                res.render("quiz", {
+                    id:            quiz.QuizID,
+                    title:         quiz.Title,
+                    questionsTable: results1,
+                    allAnswers:    results2
+                });
             });
-        
         });
-        
     });
-    
-    
 });
 
 
@@ -239,9 +246,10 @@ app.get("/leaderboard", (req, res) => {
     });
 });
 
+//this receives the data from the quiz.js file and adds it to the DB 
 app.post("/api/save-score", (req, res) => {
-    const query = "INSERT INTO FakeTable (Value) VALUES (?)";
-    
+    const query = "INSERT INTO FakeTable (Value) VALUES (?)"; //This line will be modified when we do this for real
+    //this is to ensure the grade is caldulated outside of the clients reach
     const answerArray = req.body.answerArray;
     const questions = req.body.questions;
     const timesArray = req.body.timesArray;
