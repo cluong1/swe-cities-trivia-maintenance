@@ -251,13 +251,15 @@ app.post("/api/save-score", (req, res) => {
     const query = "INSERT INTO FakeTable (Value) VALUES (?)"; //This line will be modified when we do this for real
     //this is to ensure the grade is caldulated outside of the clients reach
     const answerArray = req.body.answerArray;
+    //the use of questions in this function can be replaced with another query
     const questions = req.body.questions;
     const timesArray = req.body.timesArray;
+    
     
     let score = 0;
     for(let i = 0; i<answerArray.length; i++){
         if(answerArray[i] === questions[i][1] ){
-            score = score +( 10 * timesArray[i]);
+            score = score +( 10 * timesArray[i] * questions[i][2]);//add score multiplier here if needed
         }
     }
     

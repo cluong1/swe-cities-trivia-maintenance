@@ -14,6 +14,7 @@
     
     <div id = "quizContent">
         
+        
 
         <div id = "heading">
             <h1>
@@ -63,13 +64,14 @@
         //this is how the questions are put into an array of arrays with[[Question, Answer]]
         questions=[];
         for(let i =0; i<questionsJson.length;i++){
-            questions[i] = [questionsJson[i].Question,questionsJson[i].Answer];
+            questions[i] = [questionsJson[i].Question,questionsJson[i].Answer,questionsJson[i].Points];
         }
-
+        //this is taking all the answers in the entire quiz and putting them in array.
+        //if we need to we can make this more specific
         const citiesJson = <%- JSON.stringify(allAnswers) %>;
         cities =[];
         for(let i = 0 ; i < citiesJson.length;i++){
-            cities[i]= [citiesJson[i].Answer]
+            cities[i]= citiesJson[i].Answer
         }
     </script>
     <script src="/javascript/quiz.js"></script>

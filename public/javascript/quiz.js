@@ -1,4 +1,7 @@
 
+//From database
+//  questions = [[Question,answer,points]]
+//  cities =[answer]
 let output =        document.getElementById("output");
 let startButton =   document.getElementById("startButton");
 let question =      document.getElementById("question");
@@ -17,6 +20,7 @@ let timer;
 let correctAnswer = "";
 let answerArray = [];
 let timesArray = [];
+let pointsMultiplier = 1;
 
 // Hide answer buttons initially
 answerBox1.style.display = "none";
@@ -27,6 +31,7 @@ answerBox4.style.display = "none";
 
 //function ran at the start of every quiz
 function startQuiz() {
+  scoreDisplay.textContent = (`${score}`);
   index = 0;
   showQuestion();
   startButton.style.display = "none";
@@ -38,6 +43,9 @@ function startQuiz() {
 
 
 startButton.addEventListener("click", startQuiz);
+
+
+
 
 
 function showQuestion(){
@@ -85,7 +93,6 @@ function nextQuestion() {
   } else {
     document.getElementById("question").textContent = `Quiz finished!` ;
     document.getElementById("timer").textContent = "";
-    setAnswerButtons("Cities", "go", "here", "(:");
     answerBox1.style.display = "none";
     answerBox2.style.display = "none";
     answerBox3.style.display = "none";
@@ -95,6 +102,7 @@ function nextQuestion() {
     submitAnswers();
     answerArray =[];
     score = 0;
+
    
     
   }
@@ -150,6 +158,7 @@ answerBox2.addEventListener("click", handleAnswer);
 answerBox3.addEventListener("click", handleAnswer);
 answerBox4.addEventListener("click", handleAnswer);
 
+
 function handleAnswer(event) {
   const selected = event.target.textContent; 
 
@@ -162,7 +171,7 @@ function handleAnswer(event) {
 
 
   if (selected === correctAnswer) {
-    score = score + timeLeft * 10;
+    score = score + timeLeft * 10 * questions[index][2];
     output.textContent = "Correct!";
     answerArray.push(correctAnswer);
     timesArray.push(timeLeft);
@@ -171,8 +180,8 @@ function handleAnswer(event) {
     answerArray.push("incorrect Answer");
     timesArray.push(timeLeft);
   }
-  scoreDisplay.textContent = `${score}/${questions.length * 100}`;
-
+  //scoreDisplay.textContent = `${score}/${questions.length * 100}`;
+  scoreDisplay.textContent = `${score}`;
   setTimeout(nextQuestion, 300);
 }
 
