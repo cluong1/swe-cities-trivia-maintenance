@@ -249,6 +249,7 @@ app.get("/leaderboard", (req, res) => {
 //this receives the data from the quiz.js file and adds it to the DB 
 app.post("/api/save-score", (req, res) => {
     const query = "INSERT INTO FakeTable (Value) VALUES (?)"; //This line will be modified when we do this for real
+    /* idk if this is needed or not.
     //this is to ensure the grade is caldulated outside of the clients reach
     const answerArray = req.body.answerArray;
     //the use of questions in this function can be replaced with another query
@@ -262,8 +263,8 @@ app.post("/api/save-score", (req, res) => {
             score = score +( 10 * timesArray[i] * questions[i][2]);//add score multiplier here if needed
         }
     }
-    
-    //const score = req.body.score;
+    */
+    const score = req.body.score;
     db.query(query,[score],(err,result)=>{
         if(err){
             console.error(err);

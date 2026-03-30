@@ -90,7 +90,7 @@ function nextQuestion() {
    
   if (index < questions.length) {
     showQuestion();
-  } else {
+  } else {//end of quiz
     document.getElementById("question").textContent = `Quiz finished!` ;
     document.getElementById("timer").textContent = "";
     answerBox1.style.display = "none";
@@ -99,8 +99,8 @@ function nextQuestion() {
     answerBox4.style.display = "none";
     startButton.style.display = "block";
     output.textContent = "";
-    submitAnswers();
-    answerArray =[];
+    submitAnswers();//sends answers and score to DB
+    answerArray = [];
     score = 0;
 
    
