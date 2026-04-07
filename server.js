@@ -270,12 +270,56 @@ app.get("/", (req, res) => {
     res.render("home");
 });
 
-app.get("/daily", (req, res) => {
-    res.render("daily");
+app.get('/daily', (req, res) => {
+  const query = 'SELECT Title FROM Quizzes WHERE Date = CURDATE()';
+  
+  db.query(query, (err, result) => {
+    if (err) throw err;
+    if (result.length === 0) return res.status(404).send('No daily quiz today');
+    
+    res.redirect(`/dailyQuiz/${encodeURIComponent(result[0].Title)}`);
+  });
+});
+
+app.get("/dailyQuiz/:name", (req, res) => {
+    const name = req.params.name;
+
+    const query0 = "SELECT QuizID, Title FROM Quizzes WHERE Title = ?";
+
+    const query1 = `
+    SELECT qb.*
+    FROM QuizQuestions qq
+    JOIN Questions qb 
+    ON qq.QuestionID = qb.QuestionID
+    WHERE qq.QuizID = ?
+    ORDER BY qq.QuestionOrder;
+    `;
+
+    const query2 = "SELECT Answer FROM Questions";
+
+    db.query(query0, [name], (err, quizResult) => {
+        if (err) throw err;
+        if (quizResult.length === 0) return res.status(404).send("Quiz not found");
+
+        const quiz = quizResult[0];
+
+        db.query(query1, [quiz.QuizID], (err, results1) => {
+            if (err) throw err;
+            db.query(query2, (err, results2) => {
+                if (err) throw err;
+                res.render("dailyQuiz", {
+                    id:            quiz.QuizID,
+                    title:         quiz.Title,
+                    questionsTable: results1,
+                    allAnswers:    results2
+                });
+            });
+        });
+    });
 });
 
 app.get("/practice", (req, res) => {
-    const query = "SELECT * FROM Quizzes"
+    const query = "SELECT * FROM Quizzes WHERE Date is NULL"
 
     db.query(query, (err, results) => {
         if (err) throw err;
