@@ -84,41 +84,10 @@
                 <img src="<%= userPic %>" alt="Profile Picture" style="width:50px;height:50px;border-radius:50%;">
             <% } %>
         </div>
-
-        <section id="friends">
-            <h2>Friends List</h2>
-            <select id="friendsDropdown">
-                <option disabled selected>-- Select a friend --</option>
-            </select>
-            <button id="refreshFriends">Refresh Friends</button>
-        </section>
-
-        <section id="friend-requests">
-            <h2>Friend Requests</h2>
-            <button id="refreshRequests">Refresh Requests</button>
-            <ul id="pendingRequests"></ul>
-        </section>
-
-        <section id="send-request">
-            <h2>Send a friend request</h2>
-            <form id="sendFriendForm">
-                <input id="friendUsername" type="text" placeholder="Enter username" autocomplete="off">
-                <button id="sendFriendRequest" type="submit">Send Request</button>
-            </form>
-        </section>
-
-        <section id="chat">
-            <h2>Chat</h2>
-            <div id="chatWindow"></div>
-
-            <form id="sendMessageForm">
-                <input id="chatMessage" type="text" placeholder="Type a message" autocomplete="off">
-                <button id="sendChatMessage" type="submit">Send</button>
-            </form>
-        </section>
-
+            
         <% } %>
     </div>
 
 </body>
+<script src="/javascript/account.js"></script>
 </html>

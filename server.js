@@ -46,14 +46,6 @@ dbInit.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`, (err) => {
     });
 });
 
-//this is needed for the generateDailyQuiz Function to work we might need to redo some other code to clean it up later
-const dbPromise = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
-}).promise();
-
 function initializeTables(db) {
     const scoresTable = `
         CREATE TABLE IF NOT EXISTS scores (
@@ -65,21 +57,21 @@ function initializeTables(db) {
 
     const usersTable = `
         CREATE TABLE IF NOT EXISTS users (
-            Username VARCHAR(255) UNIQUE PRIMARY KEY,
-            Password VARCHAR(255) NOT NULL,
+            username VARCHAR(255) UNIQUE PRIMARY KEY,
+            password VARCHAR(255) NOT NULL,
             Points INT,
             IsAdmin binary,
             LastCompletedDaily Date
         )
     `;
 
-    const quizzesTable = `
-    CREATE TABLE IF NOT EXISTS quizzes (
-        QuizID INT AUTO_INCREMENT PRIMARY KEY,
-        Date DATE DEFAULT (CURRENT_DATE),
-        TITLE VARCHAR(255)
-    )
-`;
+    const quizzesTable =`
+        CREATE TABLE IF NOT EXISTS quizzes (
+            QuizID INT AUTO_INCREMENT PRIMARY KEY,
+            Date DATE,
+            TITLE VARCHAR(255)
+        )
+    `;
 
     const questionsTable=`
         CREATE TABLE IF NOT EXISTS questions (
@@ -170,6 +162,68 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 app.use(express.static("public"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.post("/register", async(req,res) =>{
+    const { username, password } =req.body;
+
+    if(!username || !password) {
+        return res.status(400).send("Missing Fields.");
+    }
+
+    try{
+        const hashedPassword = await bcrypt.hash(password,10);
+
+        db.query("INSERT INTO users (username, password) VALUES(?, ?)",
+        [username, hashedPassword],
+        (err) =>{
+            if(err) {
+                console.error(err); // log real error
+
+            if (err.code === "ER_DUP_ENTRY") {
+                return res.status(400).send("Username already exists");
+            }
+
+            return res.status(500).send("Database error");
+                    }
+
+            req.session.user = username;
+            res.send("registered successfully");
+        }
+    );
+    } catch(err){
+        res.status(500).send("Server error");
+    }
+});
+
+app.post("/login",(req,res) => {
+    const {username, password} = req.body;
+
+    db.query("SELECT * FROM users WHERE username = ?",
+        [username],
+        async(err,results)=> {
+            if(err || results.length === 0){
+                return res.status(400).send("No such user found.");
+            }
+
+            const user=results[0];
+            const match = await bcrypt.compare(password,user.password);
+            if(!match) {
+                return res.status(400).send("Invalid password");
+            }
+
+            req.session.user=user.username;
+            res.send("logged in");
+        }
+    );
+});
+
+app.post("/logout",(req,res)=>{
+    req.session.destroy(()=>{
+        res.redirect("/account");
+    });
+});
 
 
 //Im not acsesing the quizzes using there id but instead there title which may be bad.
@@ -216,57 +270,12 @@ app.get("/", (req, res) => {
     res.render("home");
 });
 
-app.get('/daily', (req, res) => {
-  const query = 'SELECT Title FROM Quizzes WHERE Date = CURDATE()';
-  
-  db.query(query, (err, result) => {
-    if (err) throw err;
-    if (result.length === 0) return res.status(404).send('No daily quiz today');
-    
-    res.redirect(`/dailyQuiz/${encodeURIComponent(result[0].Title)}`);
-  });
+app.get("/daily", (req, res) => {
+    res.render("daily");
 });
-
-app.get("/dailyQuiz/:name", (req, res) => {
-    const name = req.params.name;
-
-    const query0 = "SELECT QuizID, Title FROM Quizzes WHERE Title = ?";
-
-    const query1 = `
-    SELECT qb.*
-    FROM QuizQuestions qq
-    JOIN Questions qb 
-    ON qq.QuestionID = qb.QuestionID
-    WHERE qq.QuizID = ?
-    ORDER BY qq.QuestionOrder;
-    `;
-
-    const query2 = "SELECT Answer FROM Questions";
-
-    db.query(query0, [name], (err, quizResult) => {
-        if (err) throw err;
-        if (quizResult.length === 0) return res.status(404).send("Quiz not found");
-
-        const quiz = quizResult[0];
-
-        db.query(query1, [quiz.QuizID], (err, results1) => {
-            if (err) throw err;
-            db.query(query2, (err, results2) => {
-                if (err) throw err;
-                res.render("dailyQuiz", {
-                    id:            quiz.QuizID,
-                    title:         quiz.Title,
-                    questionsTable: results1,
-                    allAnswers:    results2
-                });
-            });
-        });
-    });
-});
-
 
 app.get("/practice", (req, res) => {
-    const query = "SELECT * FROM Quizzes WHERE Date IS NULL"
+    const query = "SELECT * FROM Quizzes"
 
     db.query(query, (err, results) => {
         if (err) throw err;
@@ -311,31 +320,3 @@ app.post("/api/save-score", (req, res) => {
         res.json({ message: "Score saved!" });
     });
 });
-
-
-
-async function generateDailyQuiz(title, numQuestions) {
-  const [existing] = await dbPromise.query(
-    'SELECT QuizID FROM Quizzes WHERE Date = CURDATE()'
-  );
-  if (existing.length > 0) return console.log('Quiz already exists for today');
-
-  const [result] = await dbPromise.query(
-    'INSERT INTO Quizzes (Title) VALUES (?)', [title]
-  );
-  const quizID = result.insertId;
-
-  const [questions] = await dbPromise.query(
-    'SELECT QuestionID FROM Questions ORDER BY RAND() LIMIT ?', [numQuestions]
-  );
-
-  const rows = questions.map((q, index) => [quizID, q.QuestionID, index + 1]);
-  await dbPromise.query(
-    'INSERT INTO QuizQuestions (QuizID, QuestionID, QuestionOrder) VALUES ?', [rows]
-  );
-
-  console.log(`Daily quiz created with ID ${quizID}`);
-}
-
-generateDailyQuiz('Daily Quiz', 10);
-
