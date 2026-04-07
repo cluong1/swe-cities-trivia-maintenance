@@ -57,8 +57,8 @@ function initializeTables(db) {
 
     const usersTable = `
         CREATE TABLE IF NOT EXISTS users (
-            Username VARCHAR(255) UNIQUE PRIMARY KEY,
-            Password VARCHAR(255) NOT NULL,
+            username VARCHAR(255) UNIQUE PRIMARY KEY,
+            password VARCHAR(255) NOT NULL,
             Points INT,
             IsAdmin binary,
             LastCompletedDaily Date
@@ -162,6 +162,68 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 app.use(express.static("public"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.post("/register", async(req,res) =>{
+    const { username, password } =req.body;
+
+    if(!username || !password) {
+        return res.status(400).send("Missing Fields.");
+    }
+
+    try{
+        const hashedPassword = await bcrypt.hash(password,10);
+
+        db.query("INSERT INTO users (username, password) VALUES(?, ?)",
+        [username, hashedPassword],
+        (err) =>{
+            if(err) {
+                console.error(err); // log real error
+
+            if (err.code === "ER_DUP_ENTRY") {
+                return res.status(400).send("Username already exists");
+            }
+
+            return res.status(500).send("Database error");
+                    }
+
+            req.session.user = username;
+            res.send("registered successfully");
+        }
+    );
+    } catch(err){
+        res.status(500).send("Server error");
+    }
+});
+
+app.post("/login",(req,res) => {
+    const {username, password} = req.body;
+
+    db.query("SELECT * FROM users WHERE username = ?",
+        [username],
+        async(err,results)=> {
+            if(err || results.length === 0){
+                return res.status(400).send("No such user found.");
+            }
+
+            const user=results[0];
+            const match = await bcrypt.compare(password,user.password);
+            if(!match) {
+                return res.status(400).send("Invalid password");
+            }
+
+            req.session.user=user.username;
+            res.send("logged in");
+        }
+    );
+});
+
+app.post("/logout",(req,res)=>{
+    req.session.destroy(()=>{
+        res.redirect("/account");
+    });
+});
 
 
 //Im not acsesing the quizzes using there id but instead there title which may be bad.
