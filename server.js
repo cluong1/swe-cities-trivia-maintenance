@@ -46,14 +46,6 @@ dbInit.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`, (err) => {
     });
 });
 
-//this is needed for the generateDailyQuiz Function to work we might need to redo some other code to clean it up later
-const dbPromise = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
-}).promise();
-
 function initializeTables(db) {
     const scoresTable = `
         CREATE TABLE IF NOT EXISTS scores (
@@ -73,13 +65,13 @@ function initializeTables(db) {
         )
     `;
 
-    const quizzesTable = `
-    CREATE TABLE IF NOT EXISTS quizzes (
-        QuizID INT AUTO_INCREMENT PRIMARY KEY,
-        Date DATE DEFAULT (CURRENT_DATE),
-        TITLE VARCHAR(255)
-    )
-`;
+    const quizzesTable =`
+        CREATE TABLE IF NOT EXISTS quizzes (
+            QuizID INT AUTO_INCREMENT PRIMARY KEY,
+            Date DATE,
+            TITLE VARCHAR(255)
+        )
+    `;
 
     const questionsTable=`
         CREATE TABLE IF NOT EXISTS questions (
@@ -278,57 +270,12 @@ app.get("/", (req, res) => {
     res.render("home");
 });
 
-app.get('/daily', (req, res) => {
-  const query = 'SELECT Title FROM Quizzes WHERE Date = CURDATE()';
-  
-  db.query(query, (err, result) => {
-    if (err) throw err;
-    if (result.length === 0) return res.status(404).send('No daily quiz today');
-    
-    res.redirect(`/dailyQuiz/${encodeURIComponent(result[0].Title)}`);
-  });
+app.get("/daily", (req, res) => {
+    res.render("daily");
 });
-
-app.get("/dailyQuiz/:name", (req, res) => {
-    const name = req.params.name;
-
-    const query0 = "SELECT QuizID, Title FROM Quizzes WHERE Title = ?";
-
-    const query1 = `
-    SELECT qb.*
-    FROM QuizQuestions qq
-    JOIN Questions qb 
-    ON qq.QuestionID = qb.QuestionID
-    WHERE qq.QuizID = ?
-    ORDER BY qq.QuestionOrder;
-    `;
-
-    const query2 = "SELECT Answer FROM Questions";
-
-    db.query(query0, [name], (err, quizResult) => {
-        if (err) throw err;
-        if (quizResult.length === 0) return res.status(404).send("Quiz not found");
-
-        const quiz = quizResult[0];
-
-        db.query(query1, [quiz.QuizID], (err, results1) => {
-            if (err) throw err;
-            db.query(query2, (err, results2) => {
-                if (err) throw err;
-                res.render("dailyQuiz", {
-                    id:            quiz.QuizID,
-                    title:         quiz.Title,
-                    questionsTable: results1,
-                    allAnswers:    results2
-                });
-            });
-        });
-    });
-});
-
 
 app.get("/practice", (req, res) => {
-    const query = "SELECT * FROM Quizzes WHERE Date IS NULL"
+    const query = "SELECT * FROM Quizzes"
 
     db.query(query, (err, results) => {
         if (err) throw err;
@@ -388,31 +335,3 @@ app.post("/api/save-score", (req, res) => {
         res.json({ message: "Score saved!" });
     });
 });
-
-
-
-async function generateDailyQuiz(title, numQuestions) {
-  const [existing] = await dbPromise.query(
-    'SELECT QuizID FROM Quizzes WHERE Date = CURDATE()'
-  );
-  if (existing.length > 0) return console.log('Quiz already exists for today');
-
-  const [result] = await dbPromise.query(
-    'INSERT INTO Quizzes (Title) VALUES (?)', [title]
-  );
-  const quizID = result.insertId;
-
-  const [questions] = await dbPromise.query(
-    'SELECT QuestionID FROM Questions ORDER BY RAND() LIMIT ?', [numQuestions]
-  );
-
-  const rows = questions.map((q, index) => [quizID, q.QuestionID, index + 1]);
-  await dbPromise.query(
-    'INSERT INTO QuizQuestions (QuizID, QuestionID, QuestionOrder) VALUES ?', [rows]
-  );
-
-  console.log(`Daily quiz created with ID ${quizID}`);
-}
-
-generateDailyQuiz('Daily Quiz', 10);
-
