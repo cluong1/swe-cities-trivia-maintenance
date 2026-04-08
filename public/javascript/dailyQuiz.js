@@ -187,12 +187,12 @@ function submitAnswers(){
     headers: {
     "Content-Type": "application/json"
     },
-    body: JSON.stringify({score:score})
-})
+    body: JSON.stringify({score:score,quizID: quizID})
+  })
 
-.then(res => res.json())
-.then(data => console.log(data))
-.catch(err => console.error(err));
+  .then(res => res.json())
+  .then(data => console.log(data))
+  .catch(err => console.error(err));
 
 
 }
