@@ -252,6 +252,10 @@ app.get("/quiz/:name", (req, res) => {
 
     const query2 = "SELECT Answer FROM Questions";
 
+
+
+   
+
     db.query(query0, [name], (err, quizResult) => {
         if (err) throw err;
         if (quizResult.length === 0) return res.status(404).send("Quiz not found");
@@ -290,46 +294,85 @@ app.get('/daily', (req, res) => {
   });
 });
 
-app.get("/dailyQuiz", (req, res) => {
+
+function isLoggedIn(req, res, next) {
+  if (req.session.user) return next();
+  res.redirect('/account');
+}
+
+
+app.get("/dailyQuiz", isLoggedIn, (req, res) => {
+    const username = req.session.user;
+
+    const attemptQuery = `
+        SELECT * FROM QuizAttempts 
+        WHERE username = ? 
+        AND Date = CURDATE()
+    `;
+
     const query0 = `
-    SELECT QuizID, Title
-    FROM Quizzes
-    WHERE Date = CURDATE()
-    ORDER BY QuizID DESC
-    LIMIT 1;
+        SELECT QuizID, Title
+        FROM Quizzes
+        WHERE Date = CURDATE()
+        ORDER BY QuizID DESC
+        LIMIT 1;
     `;
 
     const query1 = `
-    SELECT qb.*
-    FROM QuizQuestions qq
-    JOIN Questions qb 
-    ON qq.QuestionID = qb.QuestionID
-    WHERE qq.QuizID = ?
-    ORDER BY qq.QuestionOrder;
+        SELECT qb.*
+        FROM QuizQuestions qq
+        JOIN Questions qb 
+        ON qq.QuestionID = qb.QuestionID
+        WHERE qq.QuizID = ?
+        ORDER BY qq.QuestionOrder;
     `;
 
     const query2 = "SELECT Answer FROM Questions";
 
-    db.query(query0, (err, quizResult) => {
+    // Check attempt first
+    db.query(attemptQuery, [username], (err, attemptResult) => {
         if (err) throw err;
-        if (quizResult.length === 0) return res.status(404).send("Quiz not found");
 
-        const quiz = quizResult[0];
+        // If already taken, render early with the flag
+        if (attemptResult.length > 0) {
+            return res.render("dailyQuiz", {
+                alreadyTaken: true,
+                score: attemptResult[0].Score,
+                quizID: null,
+                title: null,
+                questionsTable: [],
+                allAnswers: []
+            });
+        }
 
-        db.query(query1, [quiz.QuizID], (err, results1) => {
+        // Otherwise load the quiz as normal
+        db.query(query0, (err, quizResult) => {
             if (err) throw err;
-            db.query(query2, (err, results2) => {
+            if (quizResult.length === 0) return res.status(404).send("Quiz not found");
+
+            const quiz = quizResult[0];
+
+            db.query(query1, [quiz.QuizID], (err, results1) => {
                 if (err) throw err;
-                res.render("dailyQuiz", {
-                    quizID:         quiz.QuizID,
-                    title:          quiz.Title,
-                    questionsTable: results1,
-                    allAnswers:     results2
+                db.query(query2, (err, results2) => {
+                    if (err) throw err;
+                    res.render("dailyQuiz", {
+                        alreadyTaken: false,
+                        score: null,
+                        quizID:         quiz.QuizID,
+                        title:          quiz.Title,
+                        questionsTable: results1,
+                        allAnswers:     results2,
+                    });
                 });
             });
         });
     });
 });
+
+
+
+
 
 app.get("/practice", (req, res) => {
     //All non daily quizzes
@@ -366,10 +409,7 @@ app.get("/leaderboard", (req, res) => {
     });
 });
 
-function isLoggedIn(req, res, next) {
-  if (req.session.user) return next();
-  res.redirect('/login');
-}
+
 
 //this receives the data from the quiz.js file and adds it to the DB 
 app.post("/api/save-score", isLoggedIn, (req, res) => {
@@ -386,6 +426,7 @@ app.post("/api/save-score", isLoggedIn, (req, res) => {
         res.json({ message: "Score saved!" });
     });
 });
+
 
 //this is needed for the generateDailyQuiz Function to work we might need to redo some other code to clean it up later
 const dbPromise = mysql.createConnection({

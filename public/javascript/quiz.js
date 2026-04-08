@@ -181,20 +181,3 @@ function handleAnswer(event) {
   setTimeout(nextQuestion, 300);
 }
 
-function submitAnswers(){
-  console.log(score);
-    fetch("/api/save-score", {
-    method: "POST",
-    headers: {
-    "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ score:score})
-})
-
-.then(res => res.json())
-.then(data => console.log(data))
-.catch(err => console.error(err));
-
-
-}
-console.log(cities);

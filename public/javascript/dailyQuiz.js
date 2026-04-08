@@ -27,6 +27,7 @@ answerBox3.style.display = "none";
 answerBox4.style.display = "none";
 
 
+
 //function ran at the start of every quiz
 function startQuiz() {
   scoreDisplay.textContent = (`${score}`);
@@ -196,4 +197,3 @@ function submitAnswers(){
 
 
 }
-console.log(cities);

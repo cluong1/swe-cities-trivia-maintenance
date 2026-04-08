@@ -1,0 +1,2 @@
+checki if user has an attemtp with the current date.
+if they do direct them to the finished page
