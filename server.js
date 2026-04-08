@@ -287,11 +287,11 @@ app.get('/daily', (req, res) => {
     if (err) throw err;
     if (result.length === 0) return res.status(404).send('No daily quiz today');
     
-    res.redirect(`/dailyQuiz/${encodeURIComponent(result[0].Title)}`);
+    res.redirect(`/dailyQuiz`);
   });
 });
 
-app.get("/dailyQuiz/:name", (req, res) => {
+app.get("/dailyQuiz", (req, res) => {
     const query0 = `
     SELECT QuizID, Title
     FROM Quizzes
