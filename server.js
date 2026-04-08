@@ -292,9 +292,13 @@ app.get('/daily', (req, res) => {
 });
 
 app.get("/dailyQuiz/:name", (req, res) => {
-    const name = req.params.name;
-
-    const query0 = "SELECT QuizID, Title FROM Quizzes WHERE Title = ?";
+    const query0 = `
+    SELECT QuizID, Title
+    FROM Quizzes
+    WHERE Date = CURDATE()
+    ORDER BY QuizID DESC
+    LIMIT 1;
+    `;
 
     const query1 = `
     SELECT qb.*
@@ -307,7 +311,7 @@ app.get("/dailyQuiz/:name", (req, res) => {
 
     const query2 = "SELECT Answer FROM Questions";
 
-    db.query(query0, [name], (err, quizResult) => {
+    db.query(query0, (err, quizResult) => {
         if (err) throw err;
         if (quizResult.length === 0) return res.status(404).send("Quiz not found");
 
@@ -329,6 +333,7 @@ app.get("/dailyQuiz/:name", (req, res) => {
 });
 
 app.get("/practice", (req, res) => {
+    //All non daily quizzes
     const query = "SELECT * FROM Quizzes WHERE Date is NULL"
 
     db.query(query, (err, results) => {
