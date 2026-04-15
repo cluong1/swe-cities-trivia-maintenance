@@ -5,29 +5,70 @@
     <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-    <header>
-        <div class="HP">
-            <a href="/">
-                <h1 class="Logo">Cities Trivia</h1>
-            </a>
-            <nav class = "NavBar">
-                <hr class="vertical">
-                <a href="/">Home</a>
-                <hr class="vertical">
+    <header class="header">
+        <div class="header-inner">
+            <a href="/home" class="logo">Home</a>
+
+            <nav class="navbar">
+                <a href="/" class="active">Home</a>
                 <a href="/leaderboard">Leaderboard</a>
-                <hr class="vertical">
-                <a href="/daily">Daily Quiz</a>
-                <hr class="vertical">
+                <a href="/daily" id="dailyLink">Daily Quiz</a>
                 <a href="/practice">Practice Quiz</a>
-                <hr class="vertical">
-                <a href="/account">Account</a>
-                <hr class="vertical">
+                <% if (!user) { %>
+                    <a href="/account">Log in</a>
+                <% } else { %>
+                    <a href="/account">Account</a>
+                <% } %>
             </nav>
         </div>
     </header>
 
-    <main>
-            <img src="pics/map.jpg" alt="Welcome to Cities Trivia" class="map-image">
+   <main class="home-hero">
+        <div class="hero-content">
+            <h1>🌍 Cities Trivia</h1>
+            <p>Test your knowledge of cities around the world. Play daily or practice anytime.</p>
+
+            <div class="hero-buttons">
+                <a href="/daily" class="hero-btn primary" id="dailyLink">Play Daily Quiz</a>
+                <a href="/practice" class="hero-btn secondary">Practice Mode</a>
+            </div>
+        </div>
+
+        <div class="map-wrapper">
+            <img src="pics/map.jpg" class="map-image" id="map">
+            
+            <div class="map-hotspot" id="europe"></div>
+            <div class="map-hotspot" id="asia"></div>
+            <div class="map-hotspot" id="americas"></div>
+        </div>
+
     </main>
 </body>
+    <script>
+        let transitioning = false;
+
+        document.getElementById("dailyLink").addEventListener("click", function(e) {
+            if (transitioning) return;
+            transitioning = true;
+
+            e.preventDefault();
+
+            document.querySelector(".hero-map img").classList.add("map-zoom-out");
+            document.body.classList.add("page-fade-out");
+
+            setTimeout(() => {
+                window.location.href = "/daily";
+            }, 800);
+        });
+
+        document.querySelectorAll(".map-hotspot").forEach(region => {
+            region.addEventListener("click", () => {
+                region.style.background = "rgba(76,175,80,0.4)";
+                
+                setTimeout(() => {
+                    window.location.href = "/daily?region=" + region.id;
+                }, 400);
+            });
+        });
+    </script>
 </html>

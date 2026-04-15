@@ -5,23 +5,20 @@
     <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-    <header>
-        <div class="HP">
-            <a href="/">
-                <h1 class="Logo">Cities Trivia</h1>
-            </a>
-            <nav class = "NavBar">
-                <hr class="vertical">
+    <header class="header">
+        <div class="header-inner">
+            <a href="/practice" class="logo">Practice Quiz</a>
+
+            <nav class="navbar">
                 <a href="/">Home</a>
-                <hr class="vertical">
                 <a href="/leaderboard">Leaderboard</a>
-                <hr class="vertical">
                 <a href="/daily">Daily Quiz</a>
-                <hr class="vertical">
-                <a href="/practice">Practice Quiz</a>
-                <hr class="vertical">
-                <a href="/account">Account</a>
-                <hr class="vertical">
+                <a href="/practice" class="active">Practice Quiz</a>
+                <% if (!user) { %>
+                    <a href="/account">Log in</a>
+                <% } else { %>
+                    <a href="/account">Account</a>
+                <% } %>
             </nav>
         </div>
     </header>

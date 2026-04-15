@@ -11,89 +11,96 @@
 </head>
 <body>
 
-    <header>
-        <div class="HP">
-            <a href="/">
-                <h1 class="Logo">Cities Trivia</h1>
-            </a>
-            <nav class = "NavBar">
-                <hr class="vertical">
+    <header class="header">
+        <div class="header-inner">
+            <a href="/" class="logo">Quiz</a>
+
+            <nav class="navbar">
                 <a href="/">Home</a>
-                <hr class="vertical">
                 <a href="/leaderboard">Leaderboard</a>
-                <hr class="vertical">
                 <a href="/daily">Daily Quiz</a>
-                <hr class="vertical">
                 <a href="/practice">Practice Quiz</a>
-                <hr class="vertical">
-                <a href="/account">Account</a>
-                <hr class="vertical">
+                <% if (!user) { %>
+                    <a class="active" href="/account">Log in</a>
+                <% } else { %>
+                    <a class="active" href="/account">Account</a>
+                <% } %>
             </nav>
         </div>
     </header>
     
     
-    <div id = "quizContent">
-        
-        
+    <div class="quiz-container">
+        <div class="quiz-card">
 
-        <div id = "heading">
-            <h1>
-                <%= title %> 
-            </h1>
-
-    </ul>
-            
-        </div>
-        <div id = "scoreInformation">
-                
-                    <p>Score:</p>
-                    <p id = "score"> </p>
-                
-                
-                    <p>Timer:</p>
-                    <p id = "timer"></p>
-                
-                
-                    <p>Question: </p>
-                    <p id = "questionIndex">  </p>
-
-            
-        </div>
-   
-            <h1 id = "question" >
-                Question
-            </h1>
-            <div id = "answers">
-                <button id = "ans1">City 1</button>
-                <button id = "ans2">City 2</button>
-                <button id = "ans3">City 3</button>
-                <button id = "ans4">City 4</button>
+            <div class="quiz-header">
+                <div class="quiz-title"><%= title %></div>
             </div>
-            <p id = "output">
-            </p>
 
-            <button id = "startButton">
-                Start
+            <div class="quiz-stats">
+                <div class="stat">
+                    <span>Score</span>
+                    <strong id="score">0</strong>
+                </div>
+
+                <div class="stat">
+                    <span>Timer</span>
+                    <strong id="timer">0</strong>
+                </div>
+
+                <div class="stat">
+                    <span>Question</span>
+                    <strong id="questionIndex">1</strong>
+                </div>
+            </div>
+
+            <div class="question-text" id="question">
+                Press start to begin the quiz!
+            </div>
+
+            <div class="answers-grid">
+                <button class="answer-btn" id="ans1"></button>
+                <button class="answer-btn" id="ans2"></button>
+                <button class="answer-btn" id="ans3"></button>
+                <button class="answer-btn" id="ans4"></button>
+            </div>
+
+            <p id="output"></p>
+
+            <button class="btn start-btn" id="startButton">
+                Start Quiz
             </button>
+
         </div>
+
     
      
     
     <script>
+        // ✅ Get data from backend
         const questionsJson = <%- JSON.stringify(questionsTable) %>;
-        //this is how the questions are put into an array of arrays with[[Question, Answer]]
-        questions=[];
-        for(let i =0; i<questionsJson.length;i++){
-            questions[i] = [questionsJson[i].Question,questionsJson[i].Answer,questionsJson[i].Points];
-        }
-        //this is taking all the answers in the entire quiz and putting them in array.
-        //if we need to we can make this more specific
         const citiesJson = <%- JSON.stringify(allAnswers) %>;
-        cities =[];
-        for(let i = 0 ; i < citiesJson.length;i++){
-            cities[i]= citiesJson[i].Answer
-        }
+
+            // ✅ Convert to usable arrays
+            let questions = [];
+            let cities = [];
+
+            for (let i = 0; i < questionsJson.length; i++) {
+                questions.push([
+                    questionsJson[i].Question,
+                    questionsJson[i].Answer,
+                    questionsJson[i].Points
+                ]);
+            }
+
+            for (let i = 0; i < citiesJson.length; i++) {
+                cities.push(citiesJson[i].Answer);
+            }
+
+            // ✅ Debug check (optional but VERY helpful)
+            console.log("Questions:", questions);
+            console.log("Cities:", cities);
+        </script>
     </script>
     <script src="/javascript/quiz.js"></script>
 </body>
