@@ -207,7 +207,7 @@ function handleAnswer(event) {
   answerBox4.disabled = true;
 
   if (selected === correctAnswer) {
-    score += timeLeft * 10 * questions[index][2];
+    score += timeLeft * 10;
     output.textContent = "Correct!";
     showCorrectCheck(); // ✅ NEW
   } else {

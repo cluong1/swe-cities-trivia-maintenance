@@ -171,7 +171,7 @@ function handleAnswer(event) {
 
 
   if (selected === correctAnswer) {
-    score = score + timeLeft * 10 * questions[index][2];
+    score = score + timeLeft * 10;
     output.textContent = "Correct!";
   } else {
     output.textContent = "Incorrect";
