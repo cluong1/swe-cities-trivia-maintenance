@@ -264,6 +264,7 @@ app.get("/account", (req, res) => {
 
 app.get("/leaderboard", async (req, res) => {
     const page = parseInt(req.query.page) || 1;
+    const search = req.query.search || "";
     const pageSize = 30;
     const offset = (page - 1) * pageSize;
 
@@ -278,13 +279,29 @@ app.get("/leaderboard", async (req, res) => {
         await query("TRUNCATE TABLE scores");
 
         const rows = await query("SELECT username, score FROM quizattempts WHERE DATE(date) = CURDATE() ORDER BY score DESC");
-        if (rows.length === 0) return res.render("leaderboard", { players: [], currentPage: page, totalPages: 0 });
+        if (rows.length === 0) return res.render("leaderboard", { players: [], currentPage: page, totalPages: 0, search });
 
         const values = rows.map(row => [row.username, row.score]);
         await query("INSERT INTO scores (username, score) VALUES ?", [values]);
 
-        const results = await query("SELECT username, score FROM scores ORDER BY score DESC LIMIT ? OFFSET ?", [pageSize, offset]);
-        const countResult = await query("SELECT COUNT(*) AS count FROM scores");
+        let results, countResult;
+
+        if (search) {
+            results = await query(
+                "SELECT username, score FROM scores WHERE username LIKE ? ORDER BY score DESC LIMIT ? OFFSET ?",
+                [`%${search}%`, pageSize, offset]
+            );
+            countResult = await query(
+                "SELECT COUNT(*) AS count FROM scores WHERE username LIKE ?",
+                [`%${search}%`]
+            );
+        } else {
+            results = await query(
+                "SELECT username, score FROM scores ORDER BY score DESC LIMIT ? OFFSET ?",
+                [pageSize, offset]
+            );
+            countResult = await query("SELECT COUNT(*) AS count FROM scores");
+        }
 
         const totalEntries = countResult[0].count;
         const totalPages = Math.ceil(totalEntries / pageSize);
@@ -292,7 +309,8 @@ app.get("/leaderboard", async (req, res) => {
         res.render("leaderboard", {
             players: results,
             currentPage: page,
-            totalPages
+            totalPages,
+            search
         });
     } catch (err) {
         console.error(err);

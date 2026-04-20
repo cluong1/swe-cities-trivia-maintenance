@@ -23,7 +23,20 @@
         </div>
     </header>
     <div class="leaderboard-box">
-            <% if (currentPage === 1) { %>
+
+        <!-- Search bar -->
+<form action="/leaderboard" method="GET" class="search-form">
+    <input 
+        type="text" 
+        name="search" 
+        value="<%= search %>" 
+        placeholder="Search username..." 
+        class="search-input"
+    />
+    <button type="submit" class="btn">Search</button>
+    
+</form>
+            <% if (currentPage === 1 && !search) { %>
                 <div class="podium">
                     <% players.slice(0,3).forEach((player, index) => { %>
                         <div class="podium-place place-<%= index + 1 %> 
@@ -47,17 +60,18 @@
 
             <div class="leaderboard-list">
                 <% 
-                const startIndex = currentPage === 1 ? 3 : 0;
+                const startIndex = (currentPage === 1 && !search) ? 3 : 0;
                 players.slice(startIndex).forEach((player, index) => { 
                 %>
 
                     <div class="leaderboard-item 
                         <%= player.username === user ? 'current-user' : '' %>">
 
-                        <!-- Rank -->
-                        <div class="rank">
-                            #<%= (currentPage - 1) * 30 + index + 1 + startIndex %>
-                        </div>
+                       <% if (!search) { %>
+                            <div class="rank">
+                                #<%= (currentPage - 1) * 30 + index + 1 + startIndex %>
+                            </div>
+                        <% } %>
 
                         <img src="/pics/account.jpg" class="player-image">
 
@@ -80,17 +94,17 @@
 
         <div class="pages">
             <% if (currentPage > 1) { %>
-                <a href="/leaderboard?page=<%= currentPage - 1 %>">Prev</a>
+                <a href="/leaderboard?page=<%= currentPage - 1 %>&search=<%= search %>">Prev</a>
             <% } %>
 
             <% for (let i = 1; i <= totalPages; i++) { %>
-                <a href="/leaderboard?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>">
+                <a href="/leaderboard?page=<%= i %>&search=<%= search %>" class="<%= i === currentPage ? 'active' : '' %>">
                     <%= i %>
                 </a>
             <% } %>
 
             <% if (currentPage < totalPages) { %>
-                <a href="/leaderboard?page=<%= currentPage + 1 %>">Next</a>
+                <a href="/leaderboard?page=<%= currentPage + 1 %>&search=<%= search %>">Next</a>
             <% } %>
         </div>
     </div>
