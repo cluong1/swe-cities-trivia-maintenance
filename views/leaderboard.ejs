@@ -1,44 +1,111 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Leaderboard</title>
     <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-    <div class="HP">
-            <a href="/">
-                <h1 class="Logo">Cities Trivia</h1>
-            </a>
-            <nav class = "NavBar">
-                <hr class="vertical">
+     <header class="header">
+        <div class="header-inner">
+            <a href="/leaderboard" class="logo">Leaderboard</a>
+
+            <nav class="navbar">
                 <a href="/">Home</a>
-                <hr class="vertical">
-                <a href="/leaderboard">Leaderboard</a>
-                <hr class="vertical">
+                <a href="/leaderboard" class="active">Leaderboard</a>
                 <a href="/daily">Daily Quiz</a>
-                <hr class="vertical">
                 <a href="/practice">Practice Quiz</a>
-                <hr class="vertical">
-                <a href="/account">Account</a>
-                <hr class="vertical">
+                <% if (!user) { %>
+                    <a href="/account">Log in</a>
+                <% } else { %>
+                    <a href="/account">Account</a>
+                <% } %>
             </nav>
         </div>
-         <h1>Leaderboard</h1>
+    </header>
     <div class="leaderboard-box">
-        <ol start="<%= (currentPage - 1) * 30 + 1 %>">
-            <% players.forEach(player => { %>
-            <li><strong><%= player.username %></strong>: 
-            <%= player.score %> points</li><% }) %>
-        </ol>
+
+        <!-- Search bar -->
+<form action="/leaderboard" method="GET" class="search-form">
+    <input 
+        type="text" 
+        name="search" 
+        value="<%= search %>" 
+        placeholder="Search username..." 
+        class="search-input"
+    />
+    <button type="submit" class="btn">Search</button>
+    
+</form>
+            <% if (currentPage === 1 && !search) { %>
+                <div class="podium">
+                    <% players.slice(0,3).forEach((player, index) => { %>
+                        <div class="podium-place place-<%= index + 1 %> 
+                             <%= index === 0 ? 'gold' : index === 1 ? 'silver' : 'bronze' %>">
+
+                            <img src="/pics/account.jpg" class="podium-img">
+
+                            <div class="podium-name">
+                                <%= player.username %>
+                                <% if (player.username === user) { %>
+                                    <span class="you-tag">(You)</span>
+                                <% } %>
+                            </div>
+
+                            <div class="podium-score"><%= player.score %></div>
+
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+
+            <div class="leaderboard-list">
+                <% 
+                const startIndex = (currentPage === 1 && !search) ? 3 : 0;
+                players.slice(startIndex).forEach((player, index) => { 
+                %>
+
+                    <div class="leaderboard-item 
+                        <%= player.username === user ? 'current-user' : '' %>">
+
+                       <% if (!search) { %>
+                            <div class="rank">
+                                #<%= (currentPage - 1) * 30 + index + 1 + startIndex %>
+                            </div>
+                        <% } %>
+
+                        <img src="/pics/account.jpg" class="player-image">
+
+                        <div class="player-details">
+                            <div class="username">
+                                <%= player.username %>
+                                <% if (player.username === user) { %>
+                                    <span class="you-tag">(You)</span>
+                                <% } %>
+                            </div>
+
+                            <div class="score"><%= player.score %> points</div>
+                        </div>
+
+                    </div>
+
+                <% }) %>
+
+            </div>
 
         <div class="pages">
             <% if (currentPage > 1) { %>
-                <a href="/leaderboard?page=<%= currentPage - 1 %>">Prev</a><% } %>
+                <a href="/leaderboard?page=<%= currentPage - 1 %>&search=<%= search %>">Prev</a>
+            <% } %>
 
             <% for (let i = 1; i <= totalPages; i++) { %>
-                <a href="/leaderboard?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a><% } %>
+                <a href="/leaderboard?page=<%= i %>&search=<%= search %>" class="<%= i === currentPage ? 'active' : '' %>">
+                    <%= i %>
+                </a>
+            <% } %>
 
             <% if (currentPage < totalPages) { %>
-                <a href="/leaderboard?page=<%= currentPage + 1 %>">Next</a><% } %>
+                <a href="/leaderboard?page=<%= currentPage + 1 %>&search=<%= search %>">Next</a>
+            <% } %>
         </div>
     </div>
 </body>
