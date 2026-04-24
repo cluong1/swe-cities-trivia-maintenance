@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Admin</title>
+    </head>
+<body>
+    <nav class = "NavBar">
+                <hr class="vertical">
+                <a href="/">Home</a>
+                <hr class="vertical">
+                <a href="/leaderboard">Leaderboard</a>
+                <hr class="vertical">
+                <a href="/daily">Daily Quiz</a>
+                <hr class="vertical">
+                <a href="/practice">Practice Quiz</a>
+                <hr class="vertical">
+                <a href="/account">Account</a>
+                <% if (IsAdmin) { %>
+                    <hr class="vertical">
+                    <a href="/admin">Admin Panel</a>
+                <% } %>
+            </nav>
+
+    <h2>Create Quiz</h2>
+
+    <form id="createQuizForm">
+        <input id="quizTitle" placeholder="Title">
+        <label><input type="checkbox" id="isDaily"> Daily</label>
+        <button>Create</button>
+    </form>
+
+    <h2>Quizzes</h2>
+    <ul id="quizList"></ul>
+
+    <h2 id="selectedTitle"></h2>
+    <ul id="questionList"></ul>
+
+    <h3>Add Question</h3>
+    <form id="addQuestionForm">
+        <input id="questionText" placeholder="Question">
+        <input id="answerText" placeholder="Answer">
+        <button>Add</button>
+    </form>
+
+<script src="/javascript/admin.js"></script>
+</body>
+</html>
