@@ -240,14 +240,22 @@ app.get("/dailyQuiz", isLoggedIn, (req, res) => {
 });
 
 app.get("/practice", (req, res) => {
-    //All non daily quizzes
-    const query = "SELECT * FROM Quizzes WHERE Date is NULL"
+    //all non daily quizzes
+    const query = "SELECT * FROM Quizzes WHERE Date IS NULL";
 
     db.query(query, (err, results) => {
         if (err) throw err;
-        res.render("practice",{quizzesTable: results});
+
+        const grouped = results.reduce((acc, quiz) => {
+            if (!acc[quiz.Region]) acc[quiz.Region] = [];
+            acc[quiz.Region].push(quiz);
+            return acc;
+        }, {});
+        
+        res.render("practice", {
+            groupedQuizzes: grouped
+        });
     });
-    
 });
 
 app.get("/account", (req, res) => {

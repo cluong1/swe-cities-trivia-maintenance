@@ -209,6 +209,7 @@ function handleAnswer(event) {
     answerBox3.disabled = true;
     answerBox4.disabled = true;
 
+
     if (selected === correctAnswer) {
         score += timeLeft * 10 * questions[index][2];
         output.textContent = "Correct!";

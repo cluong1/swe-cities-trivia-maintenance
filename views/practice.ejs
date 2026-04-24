@@ -22,14 +22,20 @@
             </nav>
         </div>
     </header>
+    <% Object.keys(groupedQuizzes).forEach(function(region) { %>
+
+    <h2><%= region %></h2>
+
     <ul>
-    <% quizzesTable.forEach(function(quiz) { %>
-        <li>
-            <a href="/quiz/<%= quiz.TITLE %>">
-                <%= quiz.TITLE %>
-            </a>
-        </li>
-    <% }); %>
+        <% groupedQuizzes[region].forEach(function(quiz) { %>
+            <li>
+                <a href="/quiz/<%= encodeURIComponent(quiz.TITLE) %>">
+                    <%= quiz.TITLE %>
+                </a>
+            </li>
+        <% }); %>
     </ul>
+
+    <% }); %>
 </body>
 </html>

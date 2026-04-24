@@ -250,6 +250,7 @@ function handleAnswer(event) {
   });
 
   if (selected === correctAnswer) {
+    score += timeLeft * 10;
     output.textContent = "Correct!";
     showCorrectCheck();
   }
