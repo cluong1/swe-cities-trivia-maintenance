@@ -10,23 +10,15 @@
             <a href="/account" class="logo">Account</a>
 
             <nav class="navbar">
-                <a href="/" class="active">Home</a>
+                <a href="/">Home</a>
                 <a href="/leaderboard">Leaderboard</a>
-                <a href="/daily" id="dailyLink">Daily Quiz</a>
+                <a href="/daily">Daily Quiz</a>
                 <a href="/practice">Practice Quiz</a>
-
-                <hr class="vertical">
-
                 <% if (!user) { %>
-                    <a href="/account">Log in</a>
+                    <a class="active" href="/account">Log in</a>
                 <% } else { %>
-                    <a href="/account">Account</a>
+                    <a class="active" href="/account">Account</a>
                 <% } %>
-
-                <% if (IsAdmin) { %>
-                    <hr class="vertical">
-                    <a href="/admin">Admin Panel</a>
-                }
             </nav>
         </div>
     </header>
