@@ -19,7 +19,6 @@ app.use(session({
 app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
     res.locals.userPic = req.session.userPic || null;
-    res.locals.IsAdmin = req.session.IsAdmin || false;
     next();
 });
 
@@ -72,7 +71,6 @@ app.post("/register", async(req,res) =>{
                     }
             
             req.session.user = username; 
-            req.session.IsAdmin = false;
             
             res.send("registered successfully");
         }
@@ -99,7 +97,6 @@ app.post("/login",(req,res) => {
             }
 
             req.session.user=user.username; 
-            req.session.IsAdmin = user.IsAdmin === 1;
             res.send("logged in");
         }
     );
