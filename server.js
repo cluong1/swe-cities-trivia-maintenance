@@ -150,13 +150,21 @@ app.get("/admin/questions/:id", IsAdmin, (req,res) => {
 });
 
 //ADMIN CREATE QUIZ
-app.post("/admin/create-quiz",IsAdmin, (req,res) => {
-    const { title, isDaily } = req.body;
-    const date = isDaily ? new Date() : null;
+app.post("/admin/create-quiz", IsAdmin, (req, res) => {
+    const { title, isDaily, region } = req.body;
 
-    db.query("INSERT INTO Quizzes (Title, Date) VALUES (?, ?)",
-        [title, date],
-        (err, result) => {
+    const date = isDaily
+        ? new Date().toISOString().slice(0, 10)
+        : null;
+
+    db.query(
+        "INSERT INTO Quizzes (Title, Date, Region) VALUES (?, ?, ?)",
+        [title, date, region],
+        (err) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send("DB error");
+            }
             res.send("Quiz created");
         }
     );
@@ -216,6 +224,28 @@ app.post("/admin/delete-question", IsAdmin, (req, res) => {
     );
 });
 
+//DELETE QUIZ
+app.post("/admin/delete-quiz", IsAdmin, (req, res) => {
+    const { quizID } = req.body;
+
+    console.log("Deleting quiz:", quizID);
+
+    db.query("DELETE FROM QuizQuestions WHERE QuizID = ?", [quizID], (err) => {
+        if (err) {
+            console.error("QuizQuestions delete error:", err);
+            return res.status(500).send("Error deleting links");
+        }
+
+        db.query("DELETE FROM Quizzes WHERE QuizID = ?", [quizID], (err) => {
+            if (err) {
+                console.error("Quizzes delete error:", err);
+                return res.status(500).send("Error deleting quiz");
+            }
+
+            res.send("Quiz deleted");
+        });
+    });
+});
 
 //Im not acsesing the quizzes using there id but instead there title which may be bad.
 app.get("/quiz/:name", (req, res) => {

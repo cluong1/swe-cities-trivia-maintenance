@@ -7,6 +7,9 @@ const quizTitle = document.getElementById("quizTitle");
 const isDaily = document.getElementById("isDaily");
 const questionText = document.getElementById("questionText");
 const answerText = document.getElementById("answerText");
+const region = document.getElementById("region");
+const btn = document.createElement("button");
+
 
 let selectedQuiz = null;
 let selectedQuizTitle = null;
@@ -25,27 +28,57 @@ async function loadQuizzes() {
     quizList.innerHTML = "";
 
     data.forEach(q => {
-    const li = document.createElement("li");
+        const li = document.createElement("li");
 
-    li.innerHTML = `
-        ${q.Title}
-        <button onclick="deleteQuiz(${q.QuizID}); event.stopPropagation();">Select</button>
-    `;
+        // text
+        const text = document.createElement("span");
+        text.textContent = `${q.Title} ${q.Region ? `(${q.Region})` : ""}`;
 
-    li.onclick = () => {
-        loadQuestions(q.QuizID, q.Title);
-        selectedQuiz = q.QuizID;
-        selectedQuizTitle = q.Title;
-    };
+        // delete button
+        const btn = document.createElement("button");
+        btn.textContent = "Delete";
 
-    if (selectedQuiz === q.QuizID) {
-        li.classList.add("selected");
-    }
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation(); // prevents selecting quiz
+            deleteQuiz(q.QuizID);
+        });
 
-    quizList.appendChild(li);
-});
+        // clicking li selects quiz
+        li.addEventListener("click", () => {
+            loadQuestions(q.QuizID, q.Title);
+            selectedQuiz = q.QuizID;
+            selectedQuizTitle = q.Title;
+        });
+
+        if (selectedQuiz === q.QuizID) {
+            li.classList.add("selected");
+        }
+
+        li.appendChild(text);
+        li.appendChild(btn);
+        quizList.appendChild(li);
+    });
 }
 
+async function deleteQuiz(id) {
+    if (!confirm("Delete this quiz?")) return;
+
+    await fetch("/admin/delete-quiz", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        credentials: "include",
+        body: JSON.stringify({ quizID: id })
+    });
+
+    if (selectedQuiz === id) {
+        selectedQuiz = null;
+        selectedQuizTitle = null;
+        questionList.innerHTML = "";
+        selectedTitle.innerText = "";
+    }
+
+    loadQuizzes();
+}
 
 async function loadQuestions(id, title) {
     selectedQuiz = Number(id);
@@ -64,12 +97,19 @@ async function loadQuestions(id, title) {
     data.forEach(q => {
         const li = document.createElement("li");
 
-        li.innerHTML = `
-            ${q.Question} (Answer: ${q.Answer})
-            <button onclick="deleteQuestion(${q.QuestionID}); event.stopPropagation();">
-                Delete
-            </button>
-        `;
+        const text = document.createElement("span");
+        text.textContent = `${q.Question} (Answer: ${q.Answer})`;
+
+        const btn = document.createElement("button");
+        btn.textContent = "Delete";
+
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            deleteQuestion(q.QuestionID);
+        });
+
+        li.appendChild(text);
+        li.appendChild(btn);
 
         questionList.appendChild(li);
     });
@@ -84,7 +124,8 @@ createQuizForm.onsubmit = async e => {
         credentials: "include",
         body: JSON.stringify({
             title: quizTitle.value,
-            isDaily: isDaily.checked
+            isDaily: isDaily.checked,
+            region: region.value
         })
     });
 

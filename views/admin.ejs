@@ -24,10 +24,23 @@
     <h2>Create Quiz</h2>
 
     <form id="createQuizForm">
-        <input id="quizTitle" placeholder="Title">
-        <label><input type="checkbox" id="isDaily"> Daily</label>
-        <button>Create</button>
-    </form>
+    <input id="quizTitle" placeholder="Title">
+
+    <select id="region" required>
+        <option value="North America">North America</option>
+        <option value="Europe">Europe</option>
+        <option value="Asia">Asia</option>
+        <option value="Africa">Africa</option>
+        <option value="South America">South America</option>
+        <option value="Oceania">Oceania</option>
+    </select>
+
+    <label>
+        <input type="checkbox" id="isDaily"> Daily
+    </label>
+
+    <button>Create</button>
+</form>
 
     <h2>Quizzes</h2>
     <ul id="quizList"></ul>
