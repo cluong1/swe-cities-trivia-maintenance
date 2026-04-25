@@ -128,7 +128,7 @@ createQuizForm.onsubmit = async e => {
             region: region.value
         })
     });
-
+    console.log(region.value);
     loadQuizzes();
 };
 

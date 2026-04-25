@@ -157,6 +157,10 @@ app.post("/admin/create-quiz", IsAdmin, (req, res) => {
         ? new Date().toISOString().slice(0, 10)
         : null;
 
+    const cleanRegion = region && region.trim() !== "" ? region : null;
+
+    console.log("CREATE QUIZ:", { title, date, region: cleanRegion });
+    
     db.query(
         "INSERT INTO Quizzes (Title, Date, Region) VALUES (?, ?, ?)",
         [title, date, region],
