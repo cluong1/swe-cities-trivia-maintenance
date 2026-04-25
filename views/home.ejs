@@ -42,7 +42,10 @@
             
             <div class="map-hotspot" id="europe"></div>
             <div class="map-hotspot" id="asia"></div>
+            <div class="map-hotspot" id="africa"></div>
+            <div class="map-hotspot" id="oceania"></div>
             <div class="map-hotspot" id="americas"></div>
+            <div class="map-hotspot" id="southamerica"></div>
         </div>
 
     </main>
@@ -56,7 +59,7 @@
 
             e.preventDefault();
 
-            document.querySelector(".hero-map img").classList.add("map-zoom-out");
+            document.querySelector(".map-wrapper img").classList.add("map-zoom-out");
             document.body.classList.add("page-fade-out");
 
             setTimeout(() => {
@@ -66,10 +69,12 @@
 
         document.querySelectorAll(".map-hotspot").forEach(region => {
             region.addEventListener("click", () => {
-                region.style.background = "rgba(76,175,80,0.4)";
-                
+                const group = region.id.toLowerCase();
+
+                region.style.background = "rgba(0,0,0,0.15)";
+
                 setTimeout(() => {
-                    window.location.href = "/daily?region=" + region.id;
+                    window.location.href = "/practice-group/" + group;
                 }, 400);
             });
         });

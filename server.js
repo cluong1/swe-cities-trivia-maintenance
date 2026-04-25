@@ -113,7 +113,7 @@ app.post("/logout",(req,res)=>{
 app.get("/quiz/:name", (req, res) => {
     const name = req.params.name;
 
-    const query0 = "SELECT QuizID, Title FROM Quizzes WHERE Title = ?";
+    const query0 = "SELECT QuizID, Title FROM Quizzes WHERE QuizID = ?";
 
     const query1 = `
     SELECT qb.*
@@ -240,6 +240,8 @@ app.get("/dailyQuiz", isLoggedIn, (req, res) => {
     });
 });
 
+
+
 app.get("/practice", (req, res) => {
     //all non daily quizzes
     const query = "SELECT * FROM Quizzes WHERE Date IS NULL";
@@ -255,6 +257,81 @@ app.get("/practice", (req, res) => {
         
         res.render("practice", {
             groupedQuizzes: grouped
+        });
+    });
+});
+
+app.get("/practice-group/:group", (req, res) => {
+    const group = (req.params.group || "").toLowerCase();
+
+    const map = {
+        europe: ["Europe"],
+        asia: ["Asia"],
+        africa: ["Africa"],
+        americas: ["North America"],
+        oceania: ["Oceania"],
+        southamerica: ["South America"]
+    };
+
+    const regions = map[group];
+
+    if (!regions) {
+        return res.status(404).send("Invalid region group");
+    }
+
+    const query = `
+        SELECT * FROM Quizzes
+        WHERE Date IS NULL AND Region IN (?)
+    `;
+
+    db.query(query, [regions], (err, results) => {
+        if (err) throw err;
+
+        if (results.length === 0) {
+            return res.status(404).send("No quizzes found");
+        }
+
+        const quiz = results[Math.floor(Math.random() * results.length)];
+
+        res.redirect(`/quiz/id/${quiz.QuizID}`);
+    });
+});
+
+app.get("/quiz/id/:id", (req, res) => {
+    const id = req.params.id;
+
+    const query0 = "SELECT QuizID, Title FROM Quizzes WHERE QuizID = ?";
+
+    const query1 = `
+        SELECT qb.*
+        FROM QuizQuestions qq
+        JOIN Questions qb 
+        ON qq.QuestionID = qb.QuestionID
+        WHERE qq.QuizID = ?
+        ORDER BY qq.QuestionOrder;
+    `;
+
+    const query2 = "SELECT Answer FROM Questions";
+
+    db.query(query0, [id], (err, quizResult) => {
+        if (err) throw err;
+        if (quizResult.length === 0) return res.status(404).send("Quiz not found");
+
+        const quiz = quizResult[0];
+
+        db.query(query1, [quiz.QuizID], (err, results1) => {
+            if (err) throw err;
+
+            db.query(query2, (err, results2) => {
+                if (err) throw err;
+
+                res.render("quiz", {
+                    id: quiz.QuizID,
+                    title: quiz.Title,
+                    questionsTable: results1,
+                    allAnswers: results2
+                });
+            });
         });
     });
 });
