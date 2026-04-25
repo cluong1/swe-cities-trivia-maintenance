@@ -14,18 +14,10 @@
                 <a href="/leaderboard">Leaderboard</a>
                 <a href="/daily" id="dailyLink">Daily Quiz</a>
                 <a href="/practice">Practice Quiz</a>
-<<<<<<< admin
-                <hr class="vertical">
-                <a href="/account">Account</a>
-                <% if (IsAdmin) { %>
-                    <hr class="vertical">
-                    <a href="/admin">Admin Panel</a>
-=======
                 <% if (!user) { %>
                     <a href="/account">Log in</a>
                 <% } else { %>
                     <a href="/account">Account</a>
->>>>>>> dev
                 <% } %>
             </nav>
         </div>

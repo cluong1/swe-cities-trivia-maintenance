@@ -19,7 +19,6 @@ app.use(session({
 app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
     res.locals.userPic = req.session.userPic || null;
-    res.locals.IsAdmin = req.session.IsAdmin || false;
     next();
 });
 
@@ -72,7 +71,6 @@ app.post("/register", async(req,res) =>{
                     }
             
             req.session.user = username; 
-            req.session.IsAdmin = false;
             
             res.send("registered successfully");
         }
@@ -99,7 +97,6 @@ app.post("/login",(req,res) => {
             }
 
             req.session.user=user.username; 
-            req.session.IsAdmin = user.IsAdmin === 1;
             res.send("logged in");
         }
     );
@@ -110,112 +107,6 @@ app.post("/logout",(req,res)=>{
         res.redirect("/account");
     });
 });
-
-function IsAdmin(req,res,next) {
-    if(req.session.user && req.session.IsAdmin) return next();
-    res.status(403).send("forbidden");
-}
-
-
-//ADMIN API
-app.get("/admin", IsAdmin, (req,res) => {
-    res.render("admin");
-})
-
-//admin get quizzes
-app.get("/admin/quizzes", IsAdmin, (req, res) => {
-    db.query("SELECT QuizID, Title FROM Quizzes", (err, results) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send("DB error");
-        }
-        res.json(results);
-    });
-});
-
-app.get("/admin/questions/:id", IsAdmin, (req,res) => {
-    const quizID = req.params.id;
-
-    const query = `
-        SELECT q.QuestionID, q.Question, q.Answer
-        FROM QuizQuestions qq
-        JOIN Questions q ON qq.QuestionID = q.QuestionID
-        WHERE qq.QuizID = ?
-    `;
-
-    db.query(query, [quizID], (err,results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-});
-});
-
-//ADMIN CREATE QUIZ
-app.post("/admin/create-quiz",IsAdmin, (req,res) => {
-    const { title, isDaily } = req.body;
-    const date = isDaily ? new Date() : null;
-
-    db.query("INSERT INTO Quizzes (Title, Date) VALUES (?, ?)",
-        [title, date],
-        (err, result) => {
-            res.send("Quiz created");
-        }
-    );
-});
-
-//ADMIN ADD QUESTION
-app.post("/admin/add-question", IsAdmin, (req, res) => {
-    const { quizID, question, answer } = req.body;
-
-    db.query(
-        "INSERT INTO Questions (Question, Answer) VALUES (?, ?)",
-        [question, answer],
-        (err, result) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).send("Error adding question");
-            }
-
-            const qID = result.insertId;
-
-            //get correct order
-            db.query(
-                "SELECT COUNT(*) AS count FROM QuizQuestions WHERE QuizID = ?",
-                [quizID],
-                (err, result) => {
-                    if (err) {
-                        console.error(err);
-                        return res.status(500).send("Error counting questions");
-                    }
-
-                    const order = result[0].count + 1;
-
-                    db.query(
-                        "INSERT INTO QuizQuestions (QuizID, QuestionID, QuestionOrder) VALUES (?, ?, ?)",
-                        [quizID, qID, order],
-                        (err) => {
-                            if (err) {
-                                console.error(err);
-                                return res.status(500).send("Error linking question");
-                            }
-
-                            res.send("Added");
-                        }
-                    );
-                }
-            );
-        }
-    );
-});
-
-// DELETE QUESTION
-app.post("/admin/delete-question", IsAdmin, (req, res) => {
-    const { questionID } = req.body;
-
-    db.query("DELETE FROM Questions WHERE QuestionID = ?", [questionID],
-        () => res.send("Deleted")
-    );
-});
-
 
 //Im not acsesing the quizzes using there id but instead there title which may be bad.
 app.get("/quiz/:name", (req, res) => {
