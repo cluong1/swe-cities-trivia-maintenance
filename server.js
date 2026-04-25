@@ -4,6 +4,7 @@ const app = express();
 const port = 3000;
 const mysql = require("mysql2");
 const path = require("path");
+const cron = require('node-cron');
 let db; // declare in outer scope
 
 const bcrypt = require('bcrypt');
@@ -364,4 +365,6 @@ async function generateDailyQuiz(title, numQuestions) {
   console.log(`Daily quiz created with ID ${quizID}`);
 }
 
-generateDailyQuiz('Daily Quiz', 10);
+cron.schedule('0 0 * * *', () => {
+  generateDailyQuiz('Daily Quiz', 10);
+});
