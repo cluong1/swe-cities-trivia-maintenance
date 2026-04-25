@@ -441,7 +441,7 @@ async function generateDailyQuiz(title, numQuestions) {
 
   console.log(`Daily quiz created with ID ${quizID}`);
 }
-
+generateDailyQuiz('Daily Quiz', 10);
 cron.schedule('0 0 * * *', () => {
   generateDailyQuiz('Daily Quiz', 10);
 });
