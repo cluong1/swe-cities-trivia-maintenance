@@ -103,6 +103,8 @@ startButton.addEventListener("click", startQuiz);
 // -------------------------
 function showQuestion() {
 
+  output.textContent = "";
+
    // 🔥 RESET VISUAL STATE (IMPORTANT)
   [answerBox1, answerBox2, answerBox3, answerBox4].forEach(btn => {
     btn.classList.remove("correct-btn", "wrong-btn");
@@ -136,18 +138,6 @@ function showQuestion() {
   answerBox2.disabled = false;
   answerBox3.disabled = false;
   answerBox4.disabled = false;
-
-  correctAnswer = questions[index][1];
-  question.textContent = questions[index][0];
-
-  setAnswers(index);
-
-  questionIndex.textContent = `${index + 1}/${questions.length}`;
-
-  timeLeft = 10;
-  timerDisplay.textContent = `Time: ${timeLeft}`;
-
-  clearInterval(timer);
 
   timer = setInterval(() => {
     timeLeft--;

@@ -1,267 +1,278 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-// -------------------------
-// ELEMENTS
-// -------------------------
-let output =        document.getElementById("output");
-let startButton =   document.getElementById("startButton");
-let question =      document.getElementById("question");
-let questionIndex = document.getElementById("questionIndex");
-let scoreDisplay =  document.getElementById("score");
-let timerDisplay =  document.getElementById("timer");
+    // -------------------------
+    // ELEMENTS
+    // -------------------------
+    const output = document.getElementById("output");
+    const startButton = document.getElementById("startButton");
+    const question = document.getElementById("question");
+    const questionIndex = document.getElementById("questionIndex");
+    const scoreDisplay = document.getElementById("score");
+    const timerDisplay = document.getElementById("timer");
 
-let answerBox1 = document.getElementById("ans1");
-let answerBox2 = document.getElementById("ans2");
-let answerBox3 = document.getElementById("ans3");
-let answerBox4 = document.getElementById("ans4");
+    const answerBox1 = document.getElementById("ans1");
+    const answerBox2 = document.getElementById("ans2");
+    const answerBox3 = document.getElementById("ans3");
+    const answerBox4 = document.getElementById("ans4");
 
-// -------------------------
-// STATE
-// -------------------------
-let score = 0;
-let timeLeft = 10;
-let timer;
-let correctAnswer = "";
-let index = 0;
+    const answerButtons = [
+        answerBox1,
+        answerBox2,
+        answerBox3,
+        answerBox4
+    ];
 
-// -------------------------
-// ❌ BIG X (optional)
-// -------------------------
-function showWrongX() {
-    const x = document.createElement("div");
-    x.classList.add("big-x");
-    x.innerText = "❌";
-    document.body.appendChild(x);
-    setTimeout(() => x.remove(), 600);
-}
+    // -------------------------
+    // STATE
+    // -------------------------
+    let score = 0;
+    let timeLeft = 10;
+    let timer = null;
+    let correctAnswer = "";
+    let index = 0;
 
-// -------------------------
-// 🎞 SLIDE ANIMATION
-// -------------------------
-function animateNextQuestion() {
-    const card = document.querySelector(".quiz-card");
-    if (!card) return;
-
-    card.classList.add("slide-out-left");
-
-    setTimeout(() => {
-        nextQuestion();
-
-        card.classList.remove("slide-out-left");
-        card.classList.add("slide-in-right");
-
-        setTimeout(() => {
-            card.classList.remove("slide-in-right");
-        }, 300);
-
-    }, 300);
-}
-
-// -------------------------
-// INITIAL STATE
-// -------------------------
-answerBox1.style.display = "none";
-answerBox2.style.display = "none";
-answerBox3.style.display = "none";
-answerBox4.style.display = "none";
-
-// -------------------------
-// START QUIZ
-// -------------------------
-function startQuiz() {
-    scoreDisplay.textContent = score;
-    index = 0;
-
-    startButton.style.display = "none";
-
-    answerBox1.style.display = "block";
-    answerBox2.style.display = "block";
-    answerBox3.style.display = "block";
-    answerBox4.style.display = "block";
-
-    showQuestion();
-}
-
-startButton.addEventListener("click", startQuiz);
-// 🔥 RESET BUTTON VISUAL STATE
-[answerBox1, answerBox2, answerBox3, answerBox4].forEach(btn => {
-    btn.classList.remove("correct-btn", "wrong-btn");
-});
-// -------------------------
-// SHOW QUESTION
-// -------------------------
-function showQuestion() {
-
-    // 🔥 RESET BUTTON VISUALS
-    [answerBox1, answerBox2, answerBox3, answerBox4].forEach(btn => {
-        btn.classList.remove("correct-btn", "wrong-btn");
+    // Hide answer buttons initially
+    answerButtons.forEach(btn => {
+        btn.style.display = "none";
     });
 
-    // enable buttons
-    answerBox1.disabled = false;
-    answerBox2.disabled = false;
-    answerBox3.disabled = false;
-    answerBox4.disabled = false;
+    // -------------------------
+    // UI HELPERS
+    // -------------------------
+    function updateScoreUI() {
+        scoreDisplay.textContent = score;
+    }
 
-    correctAnswer = questions[index][1];
-    question.textContent = questions[index][0];
+    function resetButtons() {
+        answerButtons.forEach(btn => {
+            btn.classList.remove("correct-btn", "wrong-btn");
+            btn.disabled = false;
+        });
+    }
 
-    output.textContent = ""; 
+    function disableButtons() {
+        answerButtons.forEach(btn => {
+            btn.disabled = true;
+        });
+    }
 
-    setAnswers(index);
+    // -------------------------
+    // START QUIZ
+    // -------------------------
+    function startQuiz() {
+        score = 0;
+        index = 0;
 
-    questionIndex.textContent = `${index + 1}/${questions.length}`;
+        updateScoreUI();
 
-    timeLeft = 10;
-    timerDisplay.textContent = `Time: ${timeLeft}`;
+        startButton.style.display = "none";
 
-    clearInterval(timer);
+        answerButtons.forEach(btn => {
+            btn.style.display = "block";
+        });
 
-    timer = setInterval(() => {
-        timeLeft--;
-        timerDisplay.textContent = `Time: ${timeLeft}`;
+        showQuestion();
+    }
 
-        if (timeLeft === 0) {
-            clearInterval(timer);
-            output.textContent = "TIME OVER";
-            setTimeout(animateNextQuestion, 300);
+    startButton.addEventListener("click", startQuiz);
+
+    // -------------------------
+    // SHOW QUESTION
+    // -------------------------
+    function showQuestion() {
+        resetButtons();
+
+        if (index >= questions.length) {
+            endQuiz();
+            return;
         }
 
-    }, 1000);
-}
+        correctAnswer = questions[index][1];
+        question.textContent = questions[index][0];
+        questionIndex.textContent = `${index + 1}/${questions.length}`;
+        output.textContent = "";
 
-// -------------------------
-// NEXT QUESTION
-// -------------------------
+        setAnswers(index);
 
-function nextQuestion() {
-    index++;
+        timeLeft = 10;
+        timerDisplay.textContent = timeLeft;
 
-    if (index < questions.length) {
+        clearInterval(timer);
+
+        timer = setInterval(() => {
+            timeLeft--;
+            timerDisplay.textContent = timeLeft;
+
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                output.textContent = "Time Over!";
+                disableButtons();
+
+                setTimeout(() => {
+                    nextQuestion();
+                }, 1000);
+            }
+        }, 1000);
+    }
+
+    // -------------------------
+    // HANDLE ANSWER
+    // -------------------------
+    function handleAnswer(e) {
+        clearInterval(timer);
+
+        const selected = e.target.textContent;
+
+        disableButtons();
+
+        // If wrong answer selected
+        if (selected !== correctAnswer) {
+            e.target.classList.add("wrong-btn");
+            output.textContent = "Incorrect!";
+            showWrongX();
+        }
+
+        // ALWAYS highlight the correct answer
+        answerButtons.forEach(btn => {
+            if (btn.textContent === correctAnswer) {
+                btn.classList.add("correct-btn");
+            }
+        });
+
+        // If correct answer selected
+        if (selected === correctAnswer) {
+            score += Math.max(1, timeLeft) * 10;
+            output.textContent = "Correct!";
+            showCorrectCheck();
+        }
+
+        updateScoreUI();
+
+        setTimeout(() => {
+            nextQuestion();
+        }, 1000);
+    }
+    // -------------------------
+    // NEXT QUESTION
+    // -------------------------
+    function nextQuestion() {
+        index++;
         showQuestion();
-    } else {
-        // END QUIZ
+    }
+
+    // -------------------------
+    // END QUIZ
+    // -------------------------
+    function endQuiz() {
+        clearInterval(timer);
+
         question.textContent = "";
         timerDisplay.textContent = "";
 
-        answerBox1.style.display = "none";
-        answerBox2.style.display = "none";
-        answerBox3.style.display = "none";
-        answerBox4.style.display = "none";
+        answerButtons.forEach(btn => {
+            btn.style.display = "none";
+        });
 
-        startButton.style.display = "none";
-        output.textContent = "";
+        document.getElementById("modal-score").textContent =
+            `Your score: ${score}`;
 
-        // Show modal
-        document.getElementById("modal-score").textContent = `Your score: ${score}`;
         document.getElementById("modal").style.display = "flex";
 
         submitAnswers();
-        score = 0;
-    }
-}
-
-// -------------------------
-// ANSWERS
-// -------------------------
-function setAnswers(index) {
-    const ans = Math.floor(Math.random() * 4) + 1;
-    const correctCityIndex = cities.indexOf(questions[index][1]);
-    const incorrects = getThreeUnique(0, cities.length - 1, correctCityIndex);
-
-    if (ans === 1) {
-        setAnswerButtons(questions[index][1], cities[incorrects[0]], cities[incorrects[1]], cities[incorrects[2]]);
-    } else if (ans === 2) {
-        setAnswerButtons(cities[incorrects[0]], questions[index][1], cities[incorrects[1]], cities[incorrects[2]]);
-    } else if (ans === 3) {
-        setAnswerButtons(cities[incorrects[0]], cities[incorrects[1]], questions[index][1], cities[incorrects[2]]);
-    } else {
-        setAnswerButtons(cities[incorrects[0]], cities[incorrects[1]], cities[incorrects[2]], questions[index][1]);
-    }
-}
-
-function getThreeUnique(min, max, excludeIndex) {
-    const arr = [];
-    for (let i = min; i <= max; i++) {
-        if (i !== excludeIndex) arr.push(i);
-    }
-    arr.sort(() => Math.random() - 0.5);
-    return arr.slice(0, 3);
-}
-
-function setAnswerButtons(one, two, three, four) {
-    answerBox1.textContent = one;
-    answerBox2.textContent = two;
-    answerBox3.textContent = three;
-    answerBox4.textContent = four;
-}
-
-// -------------------------
-// HANDLE ANSWER
-// -------------------------
-function handleAnswer(event) {
-    const selected = event.target.textContent;
-
-    clearInterval(timer);
-
-    answerBox1.disabled = true;
-    answerBox2.disabled = true;
-    answerBox3.disabled = true;
-    answerBox4.disabled = true;
-
-
-    if (selected === correctAnswer) {
-        score += timeLeft * 10 * questions[index][2];
-        output.textContent = "Correct!";
-
-        event.target.classList.add("correct-btn"); // ✅ highlight
-        showCorrectCheck(); // ✅ ADD THIS (you were missing it!)
-
-    } else {
-        output.textContent = "Incorrect";
-
-        event.target.classList.add("wrong-btn"); // ❌ highlight
-        showWrongX();
     }
 
-    scoreDisplay.textContent = score;
+    // -------------------------
+    // SET ANSWERS
+    // -------------------------
+    function setAnswers(index) {
+        const correct = questions[index][1];
 
-    setTimeout(animateNextQuestion, 300); // 🔥 FIXED
-}
+        const correctCityIndex = cities.indexOf(correct);
+        const incorrects = getThreeUnique(
+            0,
+            cities.length - 1,
+            correctCityIndex
+        );
 
-// attach listeners
-answerBox1.addEventListener("click", handleAnswer);
-answerBox2.addEventListener("click", handleAnswer);
-answerBox3.addEventListener("click", handleAnswer);
-answerBox4.addEventListener("click", handleAnswer);
+        const answers = [
+            correct,
+            cities[incorrects[0]],
+            cities[incorrects[1]],
+            cities[incorrects[2]]
+        ];
 
-// -------------------------
-// SAVE SCORE
-// -------------------------
-function submitAnswers() {
-    console.log("Submitting:", score, quizID);
-    fetch("/api/save-score", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ score: score, quizID: quizID })
-    })
-    .then(res => res.json())
-    .then(data => console.log(data))
-    .catch(err => console.error(err));
-}
+        // shuffle answers
+        answers.sort(() => Math.random() - 0.5);
 
+        answerButtons.forEach((btn, i) => {
+            btn.textContent = answers[i];
+        });
+    }
+
+    function getThreeUnique(min, max, excludeIndex) {
+        const arr = [];
+
+        for (let i = min; i <= max; i++) {
+            if (i !== excludeIndex) {
+                arr.push(i);
+            }
+        }
+
+        arr.sort(() => Math.random() - 0.5);
+
+        return arr.slice(0, 3);
+    }
+
+    // -------------------------
+    // ANIMATIONS
+    // -------------------------
+    function showCorrectCheck() {
+        const check = document.createElement("div");
+        check.classList.add("big-check");
+        check.innerText = "✅";
+
+        document.body.appendChild(check);
+
+        setTimeout(() => {
+            check.remove();
+        }, 600);
+    }
+
+    function showWrongX() {
+        const x = document.createElement("div");
+        x.classList.add("big-x");
+        x.innerText = "❌";
+
+        document.body.appendChild(x);
+
+        setTimeout(() => {
+            x.remove();
+        }, 600);
+    }
+
+    // -------------------------
+    // EVENT LISTENERS
+    // -------------------------
+    answerButtons.forEach(btn => {
+        btn.addEventListener("click", handleAnswer);
+    });
+
+    // -------------------------
+    // SAVE SCORE
+    // -------------------------
+    function submitAnswers() {
+        fetch("/api/save-score", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                score: score,
+                quizID: quizID
+            })
+        })
+        .then(res => res.json())
+        .then(data => console.log(data))
+        .catch(err => console.error(err));
+    }
 });
-
-function showCorrectCheck() {
-    const check = document.createElement("div");
-    check.classList.add("big-check");
-    check.innerText = "✅";
-
-    document.body.appendChild(check);
-
-    setTimeout(() => {
-        check.remove();
-    }, 600);
-}

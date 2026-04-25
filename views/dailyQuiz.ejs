@@ -37,7 +37,7 @@
                 <div class="quiz-stats">
                     <div class="stat">
                         <span>Score</span>
-                        <strong id="score">0</strong>
+                        <strong id="score"><%= typeof score !== "undefined" ? score : 0 %></strong>
                     </div>
 
                     <div class="stat">
