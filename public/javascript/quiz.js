@@ -103,10 +103,13 @@ startButton.addEventListener("click", startQuiz);
 // -------------------------
 function showQuestion() {
 
-  answerBox1.disabled = false;
-  answerBox2.disabled = false;
-  answerBox3.disabled = false;
-  answerBox4.disabled = false;
+  output.textContent = "";
+
+   // 🔥 RESET VISUAL STATE (IMPORTANT)
+  [answerBox1, answerBox2, answerBox3, answerBox4].forEach(btn => {
+    btn.classList.remove("correct-btn", "wrong-btn");
+    btn.disabled = false;
+  });
 
   correctAnswer = questions[index][1];
   question.textContent = questions[index][0];
@@ -119,6 +122,22 @@ function showQuestion() {
   timerDisplay.textContent = `Time: ${timeLeft}`;
 
   clearInterval(timer);
+
+  timer = setInterval(() => {
+    timeLeft--;
+    timerDisplay.textContent = `Time: ${timeLeft}`;
+
+    if (timeLeft === 0) {
+      clearInterval(timer);
+      output.textContent = "TIME OVER";
+      setTimeout(animateNextQuestion, 300);
+    }
+  }, 1000);
+
+  answerBox1.disabled = false;
+  answerBox2.disabled = false;
+  answerBox3.disabled = false;
+  answerBox4.disabled = false;
 
   timer = setInterval(() => {
     timeLeft--;
@@ -206,18 +225,29 @@ function handleAnswer(event) {
   answerBox3.disabled = true;
   answerBox4.disabled = true;
 
+  // ❌ wrong
+  if (selected !== correctAnswer) {
+    output.textContent = "Incorrect";
+    event.target.classList.add("wrong-btn");
+    showWrongX();
+  }
+
+  // ✅ correct (always highlight correct answer)
+  [answerBox1, answerBox2, answerBox3, answerBox4].forEach(btn => {
+    if (btn.textContent === correctAnswer) {
+      btn.classList.add("correct-btn");
+    }
+  });
+
   if (selected === correctAnswer) {
     score += timeLeft * 10;
     output.textContent = "Correct!";
-    showCorrectCheck(); // ✅ NEW
-  } else {
-      output.textContent = "Incorrect";
-      showWrongX(); // ❌ existing
+    showCorrectCheck();
   }
 
   scoreDisplay.textContent = score;
 
-  setTimeout(animateNextQuestion, 300);
+  setTimeout(animateNextQuestion, 700); // slight delay so user sees highlight
 }
 
 answerBox1.addEventListener("click", handleAnswer);

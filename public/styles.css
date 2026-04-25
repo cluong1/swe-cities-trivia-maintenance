@@ -662,3 +662,27 @@ body {
     outline: none;
     transition: border 0.2s ease;
 }
+.slide-out-left {
+    animation: slideOutLeft 0.3s ease forwards;
+}
+
+.slide-in-right {
+    animation: slideInRight 0.3s ease forwards;
+}
+
+@keyframes slideOutLeft {
+    to { transform: translateX(-100%); opacity: 0; }
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.correct-btn {
+    background: #c8f7c5 !important;
+}
+
+.wrong-btn {
+    background: #ffc9c9 !important;
+}
