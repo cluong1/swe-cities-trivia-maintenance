@@ -19,6 +19,7 @@ let answerBox4 = document.getElementById("ans4");
 let score = 0;
 let timeLeft = 10;
 let timer;
+let timerActive = false;
 let correctAnswer = "";
 let index = 0;
 
@@ -85,6 +86,7 @@ answerBox4.style.display = "none";
 function startQuiz() {
   scoreDisplay.textContent = score;
   index = 0;
+  
 
   startButton.style.display = "none";
 
@@ -121,13 +123,18 @@ function showQuestion() {
   timeLeft = 10;
   timerDisplay.textContent = `Time: ${timeLeft}`;
 
+  timerActive = false;
   clearInterval(timer);
+  timerActive = true;
 
   timer = setInterval(() => {
+    if (!timerActive) return;
+    
     timeLeft--;
     timerDisplay.textContent = `Time: ${timeLeft}`;
 
     if (timeLeft === 0) {
+      timerActive = false;
       clearInterval(timer);
       output.textContent = "TIME OVER";
       setTimeout(animateNextQuestion, 300);
@@ -138,17 +145,6 @@ function showQuestion() {
   answerBox2.disabled = false;
   answerBox3.disabled = false;
   answerBox4.disabled = false;
-
-  timer = setInterval(() => {
-    timeLeft--;
-    timerDisplay.textContent = `Time: ${timeLeft}`;
-
-    if (timeLeft === 0) {
-      clearInterval(timer);
-      output.textContent = "TIME OVER";
-      setTimeout(animateNextQuestion, 300);
-    }
-  }, 1000);
 }
 
 // -------------------------
@@ -218,6 +214,7 @@ function setAnswerButtons(one, two, three, four) {
 function handleAnswer(event) {
   const selected = event.target.textContent;
 
+  timerActive = false;
   clearInterval(timer);
 
   answerBox1.disabled = true;
@@ -255,15 +252,5 @@ answerBox2.addEventListener("click", handleAnswer);
 answerBox3.addEventListener("click", handleAnswer);
 answerBox4.addEventListener("click", handleAnswer);
 
-// -------------------------
-// SAVE SCORE
-// -------------------------
-function submitAnswers() {
-  fetch("/api/save-score", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ score: score })
-  });
-}
 
 });
