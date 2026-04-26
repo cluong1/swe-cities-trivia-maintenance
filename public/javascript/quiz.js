@@ -168,7 +168,7 @@ function nextQuestion() {
 
     output.textContent = "";
 
-    submitAnswers();
+    
     score = 0;
   }
 }
@@ -251,6 +251,8 @@ answerBox1.addEventListener("click", handleAnswer);
 answerBox2.addEventListener("click", handleAnswer);
 answerBox3.addEventListener("click", handleAnswer);
 answerBox4.addEventListener("click", handleAnswer);
+
+
 
 
 });
