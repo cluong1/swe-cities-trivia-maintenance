@@ -77,11 +77,9 @@
      
     
     <script>
-        // ✅ Get data from backend
         const questionsJson = <%- JSON.stringify(questionsTable) %>;
         const citiesJson = <%- JSON.stringify(allAnswers) %>;
-
-            // ✅ Convert to usable arrays
+ 
             let questions = [];
             let cities = [];
 
@@ -96,9 +94,6 @@
                 cities.push(citiesJson[i].Answer);
             }
 
-            // ✅ Debug check (optional but VERY helpful)
-            console.log("Questions:", questions);
-            console.log("Cities:", cities);
         </script>
     </script>
     <script src="/javascript/quiz.js"></script>

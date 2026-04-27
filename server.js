@@ -23,13 +23,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// const dbInit = mysql.createConnection({
-//     host: process.env.DB_HOST,
-//     user: process.env.DB_USER,
-//     password: process.env.DB_PASSWORD
-// });
-//??^^idk what this does and my code runs without it but it was in the original code so im leaving it here for now (why did copilot feel the need to finish writing my fucking comment istg)
-
 db = mysql.createConnection({
         host: process.env.DB_HOST,
         user: process.env.DB_USER,
@@ -109,48 +102,6 @@ app.post("/logout",(req,res)=>{
     });
 });
 
-//Im not acsesing the quizzes using there id but instead there title which may be bad.
-app.get("/quiz/:name", (req, res) => {
-    const name = req.params.name;
-
-    const query0 = "SELECT QuizID, Title FROM Quizzes WHERE QuizID = ?";
-
-    const query1 = `
-    SELECT qb.*
-    FROM QuizQuestions qq
-    JOIN Questions qb 
-    ON qq.QuestionID = qb.QuestionID
-    WHERE qq.QuizID = ?
-    ORDER BY qq.QuestionOrder;
-    `;
-
-    const query2 = "SELECT Answer FROM Questions";
-
-
-
-   
-
-    db.query(query0, [name], (err, quizResult) => {
-        if (err) throw err;
-        if (quizResult.length === 0) return res.status(404).send("Quiz not found");
-
-        const quiz = quizResult[0];
-
-        db.query(query1, [quiz.QuizID], (err, results1) => {
-            if (err) throw err;
-            db.query(query2, (err, results2) => {
-                if (err) throw err;
-                res.render("quiz", {
-                    id:            quiz.QuizID,
-                    title:         quiz.Title,
-                    questionsTable: results1,
-                    allAnswers:    results2
-                });
-            });
-        });
-    });
-});
-
 app.get("/", (req, res) => {
     res.render("home");
 });
@@ -165,11 +116,6 @@ app.get('/daily', (req, res) => {
     res.redirect(`/dailyQuiz`);
   });
 });
-
-function isLoggedIn(req, res, next) {
-  if (req.session.user) return next();
-  res.redirect('/account');
-}
 
 app.get("/dailyQuiz", isLoggedIn, (req, res) => {
     const username = req.session.user;
@@ -297,10 +243,11 @@ app.get("/practice-group/:group", (req, res) => {
     });
 });
 
+//this finds 
 app.get("/quiz/id/:id", (req, res) => {
     const id = req.params.id;
 
-    const query0 = "SELECT QuizID, Title FROM Quizzes WHERE QuizID = ?";
+    const query0 = "SELECT QuizID, Title, Date FROM Quizzes WHERE QuizID = ?";
 
     const query1 = `
         SELECT qb.*
@@ -318,6 +265,10 @@ app.get("/quiz/id/:id", (req, res) => {
         if (quizResult.length === 0) return res.status(404).send("Quiz not found");
 
         const quiz = quizResult[0];
+
+        if (quiz.Date !== null) {
+            return res.status(404).send("Quiz not found");
+        }
 
         db.query(query1, [quiz.QuizID], (err, results1) => {
             if (err) throw err;
@@ -396,7 +347,7 @@ app.get("/leaderboard", async (req, res) => {
     }
 });
 
-//this receives the data from the quiz.js file and adds it to the DB 
+//This receives a score, quizId and User from submit Ansers in dailyQuiz.js and adds them to the QuizAttempts table
 app.post("/api/save-score", isLoggedIn, (req, res) => {
     const query = "INSERT INTO QuizAttempts (Username, QuizID, Score, Date) VALUES (?, ?, ?, CURDATE())";
     const score = req.body.score;
@@ -412,35 +363,67 @@ app.post("/api/save-score", isLoggedIn, (req, res) => {
     });
 });
 
-
-//this is needed for the generateDailyQuiz Function to work we might need to redo some other code to clean it up later
-const dbPromise = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
-}).promise();
-
-async function generateDailyQuiz(title, numQuestions) {
-  const [existing] = await dbPromise.query(
-    'SELECT QuizID FROM Quizzes WHERE Date = CURDATE()'
-  );
-  if (existing.length > 0) return console.log('Quiz already exists for today');
-
-  const [result] = await dbPromise.query(
-    'INSERT INTO Quizzes (Title) VALUES (?)', [title]
-  );
-  const quizID = result.insertId;
-
-  const [questions] = await dbPromise.query(
-    'SELECT QuestionID FROM Questions ORDER BY RAND() LIMIT ?', [numQuestions]
-  );
-
-  const rows = questions.map((q, index) => [quizID, q.QuestionID, index + 1]);
-  await dbPromise.query('INSERT INTO QuizQuestions (QuizID, QuestionID, QuestionOrder) VALUES ?', [rows]);
-
-  console.log(`Daily quiz created with ID ${quizID}`);
+//this function will pass if they are logged in or redirect to the login page other wise
+function isLoggedIn(req, res, next) {
+  if (req.session.user) return next();
+  res.redirect('/account');
 }
+
+/**
+ * Takes in titel and number of questions
+ * Checks for existing quizzes with todays date
+ * Inserts a new daily quiz into quizzes which has a date automatically and saves its ID
+ * Creates a array rows contianing numQuestions random questions
+ * Inserts the array into quizQuestions.
+ */
+function generateDailyQuiz(title, numQuestions) {
+  db.query(
+    'SELECT QuizID FROM Quizzes WHERE Date = CURDATE()',
+    (err, existing) => {
+      if (err) return console.error(err);
+
+      if (existing.length > 0) {
+        return console.log('Quiz already exists for today');
+      }
+
+      db.query(
+        'INSERT INTO Quizzes (Title) VALUES (?)',
+        [title],
+        (err, result) => {
+          if (err) return console.error(err);
+
+          const quizID = result.insertId;
+
+          db.query(
+            'SELECT QuestionID FROM Questions ORDER BY RAND() LIMIT ?',
+            [numQuestions],
+            (err, questions) => {
+              if (err) return console.error(err);
+
+              const rows = questions.map((q, index) => [
+                quizID,
+                q.QuestionID,
+                index + 1
+              ]);
+
+              db.query(
+                'INSERT INTO QuizQuestions (QuizID, QuestionID, QuestionOrder) VALUES ?',
+                [rows],
+                (err) => {
+                  if (err) return console.error(err);
+
+                  console.log(`Daily quiz created with ID ${quizID}`);
+                }
+              );
+            }
+          );
+        }
+      );
+    }
+  );
+}
+
+
 generateDailyQuiz('Daily Quiz', 10);
 cron.schedule('0 0 * * *', () => {
   generateDailyQuiz('Daily Quiz', 10);
