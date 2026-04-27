@@ -23,13 +23,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// const dbInit = mysql.createConnection({
-//     host: process.env.DB_HOST,
-//     user: process.env.DB_USER,
-//     password: process.env.DB_PASSWORD
-// });
-//??^^idk what this does and my code runs without it but it was in the original code so im leaving it here for now (why did copilot feel the need to finish writing my fucking comment istg)
-
 db = mysql.createConnection({
         host: process.env.DB_HOST,
         user: process.env.DB_USER,
@@ -123,11 +116,6 @@ app.get('/daily', (req, res) => {
     res.redirect(`/dailyQuiz`);
   });
 });
-
-function isLoggedIn(req, res, next) {
-  if (req.session.user) return next();
-  res.redirect('/account');
-}
 
 app.get("/dailyQuiz", isLoggedIn, (req, res) => {
     const username = req.session.user;
@@ -255,6 +243,7 @@ app.get("/practice-group/:group", (req, res) => {
     });
 });
 
+//this finds 
 app.get("/quiz/id/:id", (req, res) => {
     const id = req.params.id;
 
@@ -358,7 +347,7 @@ app.get("/leaderboard", async (req, res) => {
     }
 });
 
-//this receives the data from the quiz.js file and adds it to the DB 
+//This receives a score, quizId and User from submit Ansers in dailyQuiz.js and adds them to the QuizAttempts table
 app.post("/api/save-score", isLoggedIn, (req, res) => {
     const query = "INSERT INTO QuizAttempts (Username, QuizID, Score, Date) VALUES (?, ?, ?, CURDATE())";
     const score = req.body.score;
@@ -374,7 +363,19 @@ app.post("/api/save-score", isLoggedIn, (req, res) => {
     });
 });
 
+//this function will pass if they are logged in or redirect to the login page other wise
+function isLoggedIn(req, res, next) {
+  if (req.session.user) return next();
+  res.redirect('/account');
+}
 
+/**
+ * Takes in titel and number of questions
+ * Checks for existing quizzes with todays date
+ * Inserts a new daily quiz into quizzes which has a date automatically and saves its ID
+ * Creates a array rows contianing numQuestions random questions
+ * Inserts the array into quizQuestions.
+ */
 function generateDailyQuiz(title, numQuestions) {
   db.query(
     'SELECT QuizID FROM Quizzes WHERE Date = CURDATE()',

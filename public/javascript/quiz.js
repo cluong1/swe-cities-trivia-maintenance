@@ -1,9 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
-
 //From database
 // questions = [[Question,answer,points]]
 // cities =[answer]
-
 let output =        document.getElementById("output");
 let startButton =   document.getElementById("startButton");
 let question =      document.getElementById("question");
