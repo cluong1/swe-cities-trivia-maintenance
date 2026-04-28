@@ -248,6 +248,7 @@ app.get("/", (req, res) => {
     res.render("home");
 });
 
+//i have this as a redirect in order to make it cleaner but you could redo this if you want
 app.get('/daily', (req, res) => {
   const query = 'SELECT Title FROM Quizzes WHERE Date = CURDATE()';
   
@@ -258,6 +259,7 @@ app.get('/daily', (req, res) => {
     res.redirect(`/dailyQuiz`);
   });
 });
+
 
 app.get("/dailyQuiz", isLoggedIn, (req, res) => {
     const username = req.session.user;
@@ -331,12 +333,12 @@ app.get("/dailyQuiz", isLoggedIn, (req, res) => {
 
 
 app.get("/practice", (req, res) => {
-    //all non daily quizzes
+    //selects all non daily quizzes which have date as null
     const query = "SELECT * FROM Quizzes WHERE Date IS NULL";
 
     db.query(query, (err, results) => {
         if (err) throw err;
-
+        //adds all quizzes to an object of region: [quiz1, quiz2]
         const grouped = results.reduce((acc, quiz) => {
             if (!acc[quiz.Region]) acc[quiz.Region] = [];
             acc[quiz.Region].push(quiz);
@@ -385,7 +387,7 @@ app.get("/practice-group/:group", (req, res) => {
     });
 });
 
-//this finds 
+
 app.get("/quiz/id/:id", (req, res) => {
     const id = req.params.id;
 
@@ -489,7 +491,7 @@ app.get("/leaderboard", async (req, res) => {
     }
 });
 
-//This receives a score, quizId and User from submit Ansers in dailyQuiz.js and adds them to the QuizAttempts table
+//This receives a score and quizId from submit Answers in dailyQuiz.js and adds them to the QuizAttempts table, it get the user from the seesion.user
 app.post("/api/save-score", isLoggedIn, (req, res) => {
     const query = "INSERT INTO QuizAttempts (Username, QuizID, Score, Date) VALUES (?, ?, ?, CURDATE())";
     const score = req.body.score;
@@ -565,8 +567,9 @@ function generateDailyQuiz(title, numQuestions) {
   );
 }
 
-
+//the first function call is ran on server run and the second is run on midnight. if the server were live this would make more sense.
 generateDailyQuiz('Daily Quiz', 10);
+//cron is just a library to run a function at a time the first number is min and sec is hour.
 cron.schedule('0 0 * * *', () => {
   generateDailyQuiz('Daily Quiz', 10);
 });

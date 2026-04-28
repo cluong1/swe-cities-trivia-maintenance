@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-//From database
+// From quiz.ejs
 // questions = [[Question,answer,points]]
 // cities =[answer]
 let output =        document.getElementById("output");
@@ -102,7 +102,7 @@ startButton.addEventListener("click", startQuiz);
 // SHOW QUESTION
 // -------------------------
 function showQuestion() {
-
+  //output is the line that says incorrect and correct at the bottom
   output.textContent = "";
 
    // 🔥 RESET VISUAL STATE (IMPORTANT)
@@ -150,7 +150,6 @@ function showQuestion() {
 // -------------------------
 function nextQuestion() {
   index++;
-
   if (index < questions.length) {
     showQuestion();
   } else {
@@ -174,6 +173,7 @@ function nextQuestion() {
 // -------------------------
 // ANSWERS
 // -------------------------
+//this selects a random index for the correct answer to be at and sets it with the setAnswer buttons function. the order of the incorects does not matter.
 function setAnswers(index) {
   const ans = Math.floor(Math.random() * 4) + 1;
   const correctCityIndex = cities.indexOf(questions[index][1]);
@@ -189,7 +189,7 @@ function setAnswers(index) {
     setAnswerButtons(cities[incorrects[0]], cities[incorrects[1]], cities[incorrects[2]], questions[index][1]);
   }
 }
-
+//this select three random numbers between min and max exlcuding excludeIndex
 function getThreeUnique(min, max, excludeIndex) {
   const arr = [];
   for (let i = min; i <= max; i++) {
@@ -198,7 +198,7 @@ function getThreeUnique(min, max, excludeIndex) {
   arr.sort(() => Math.random() - 0.5);
   return arr.slice(0, 3);
 }
-
+//this is just a shortcut for setting answers button text content 
 function setAnswerButtons(one, two, three, four) {
   answerBox1.textContent = one;
   answerBox2.textContent = two;

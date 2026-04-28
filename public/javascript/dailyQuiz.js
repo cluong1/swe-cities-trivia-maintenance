@@ -1,4 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // From quiz.ejs
+    // questions = [[Question,answer,points]]
+    // cities =[answer]
 
     // -------------------------
     // ELEMENTS
@@ -261,6 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // SAVE SCORE
     // -------------------------
     function submitAnswers() {
+        //received in server.js
         fetch("/api/save-score", {
             method: "POST",
             headers: {
