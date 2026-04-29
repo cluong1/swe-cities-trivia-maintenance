@@ -1,3 +1,6 @@
+// -------------------------
+// ELEMENTS
+// -------------------------
 const quizList = document.getElementById("quizList");
 const questionList = document.getElementById("questionList");
 const selectedTitle = document.getElementById("selectedTitle");
@@ -14,9 +17,13 @@ const btn = document.createElement("button");
 let selectedQuiz = null;
 let selectedQuizTitle = null;
 
+// -------------------------
+// LOAD QUIZZES
+// -------------------------
 async function loadQuizzes() {
     const res = await fetch("/admin/quizzes", { credentials: "include" });
 
+    //Send error if invalid response
     if (!res.ok) {
         const text = await res.text();
         console.error("Error response:", text);
@@ -60,9 +67,14 @@ async function loadQuizzes() {
     });
 }
 
+// -------------------------
+// DELETE QUIZ
+// -------------------------
 async function deleteQuiz(id) {
+    //handle errors
     if (!confirm("Delete this quiz?")) return;
 
+    //async send delete request to server.js
     await fetch("/admin/delete-quiz", {
         method: "POST",
         headers: {"Content-Type":"application/json"},
@@ -70,6 +82,7 @@ async function deleteQuiz(id) {
         body: JSON.stringify({ quizID: id })
     });
 
+    //delete item from list element
     if (selectedQuiz === id) {
         selectedQuiz = null;
         selectedQuizTitle = null;
@@ -77,15 +90,21 @@ async function deleteQuiz(id) {
         selectedTitle.innerText = "";
     }
 
+    //reload quizzes
     loadQuizzes();
 }
 
+// -------------------------
+// LOAD QUESTIONS
+// -------------------------
 async function loadQuestions(id, title) {
+    //select quiz to display questions
     selectedQuiz = Number(id);
     selectedQuizTitle = title;
 
     selectedTitle.innerText = title;
 
+    //grab response
     const res = await fetch(`/admin/questions/${id}`, {
         credentials: "include"
     });
@@ -94,6 +113,7 @@ async function loadQuestions(id, title) {
 
     questionList.innerHTML = "";
 
+    //create delete button next to each question
     data.forEach(q => {
         const li = document.createElement("li");
 
@@ -115,9 +135,13 @@ async function loadQuestions(id, title) {
     });
 }
 
+// -------------------------
+// CREATE QUIZ
+// -------------------------
 createQuizForm.onsubmit = async e => {
     e.preventDefault();
 
+    //send post request to server.js
     await fetch("/admin/create-quiz", {
         method: "POST",
         headers: {"Content-Type":"application/json"},
@@ -129,9 +153,13 @@ createQuizForm.onsubmit = async e => {
         })
     });
     console.log(region.value);
+    //reload quizzes
     loadQuizzes();
 };
 
+// -------------------------
+// CREATE QUESTION
+// -------------------------
 addQuestionForm.onsubmit = async e => {
     e.preventDefault();
 
@@ -154,6 +182,9 @@ addQuestionForm.onsubmit = async e => {
     loadQuestions(selectedQuiz, selectedQuizTitle);
 };
 
+// -------------------------
+// DELETE QUESTION
+// -------------------------
 async function deleteQuestion(id) {
     await fetch("/admin/delete-question", {
         method: "POST",

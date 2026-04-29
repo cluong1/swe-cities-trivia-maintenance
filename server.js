@@ -42,6 +42,11 @@ app.use(express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
+/*  Route for registering a user.
+*   Receives a request and sends it to DB.
+*   Hashes password and automatically sets all new users to not be an admin.
+*/
 app.post("/register", async(req,res) =>{
     const { username, password } =req.body;
 
@@ -50,6 +55,7 @@ app.post("/register", async(req,res) =>{
     }
 
     try{
+        //hashing user passwords
         const hashedPassword = await bcrypt.hash(password,10);
 
         db.query("INSERT INTO users (username, password) VALUES(?, ?)",
@@ -76,12 +82,13 @@ app.post("/register", async(req,res) =>{
     }
 });
 
+//Helper function to ascertain user session and admin status.
 function IsAdmin(req,res,next) {
     if(req.session.user && req.session.IsAdmin) return next();
     res.status(403).send("forbidden");
 }
 
-//ADMIN API
+//Render admin page
 app.get("/admin", IsAdmin, (req,res) => {
     res.render("admin");
 })
@@ -97,6 +104,7 @@ app.get("/admin/quizzes", IsAdmin, (req, res) => {
     });
 });
 
+//admin display questions for the quiz id provided
 app.get("/admin/questions/:id", IsAdmin, (req,res) => {
     const quizID = req.params.id;
 
@@ -192,7 +200,7 @@ app.post("/admin/delete-question", IsAdmin, (req, res) => {
     );
 });
 
-//DELETE QUIZ
+//ADMIN DELETE QUIZ
 app.post("/admin/delete-quiz", IsAdmin, (req, res) => {
     const { quizID } = req.body;
 
@@ -215,6 +223,8 @@ app.post("/admin/delete-quiz", IsAdmin, (req, res) => {
     });
 });
 
+//Route to send login request to DB
+//Matches provided username and password to all entries in users in DB
 app.post("/login",(req,res) => {
     const {username, password} = req.body;
 
@@ -238,6 +248,7 @@ app.post("/login",(req,res) => {
     );
 });
 
+//Logout route to destroy the session
 app.post("/logout",(req,res)=>{
     req.session.destroy(()=>{
         res.redirect("/account");
