@@ -72,7 +72,7 @@
         <input type="hidden" id="currentUsername" value="<%= user %>">
 
         <div class="account-card profile-card">
-            <img src="<%= userPic || '/pics/account.jpg' %>" class="profile-pic">
+            <img src="<%= profilePic ? '/uploads/' + profilePic : '/pics/account.jpg' %>" class="profile-pic" onerror="this.src='/pics/account.jpg'">
 
             <div class="user-meta">
                 <div><strong><%= user %></strong></div>
@@ -82,6 +82,7 @@
 
         <div class="account-card">
             <form action="/logout" method="POST">
+                <button class="btn"><a class="active" href="/changePP">Change Profile Pic</a></button>
                 <button class="btn" type="submit">Log Out</button>
             </form>
         </div>

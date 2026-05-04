@@ -42,7 +42,7 @@
                         <div class="podium-place place-<%= index + 1 %> 
                              <%= index === 0 ? 'gold' : index === 1 ? 'silver' : 'bronze' %>">
 
-                            <img src="/pics/account.jpg" class="podium-img">
+                            <img src="<%= player.ProfilePicture ? '/uploads/' + player.ProfilePicture : '/pics/account.jpg' %>" class="podium-img" onerror="this.src='/pics/account.jpg'">
 
                             <div class="podium-name">
                                 <%= player.username %>
@@ -73,7 +73,7 @@
                             </div>
                         <% } %>
 
-                        <img src="/pics/account.jpg" class="player-image">
+                        <img src="<%= player.ProfilePicture ? '/uploads/' + player.ProfilePicture : '/pics/account.jpg' %>" class="player-image" onerror="this.src='/pics/account.jpg'">
 
                         <div class="player-details">
                             <div class="username">
