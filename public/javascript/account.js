@@ -5,6 +5,12 @@ document.getElementById("accountSubmissionForm")?.addEventListener("submit",asyn
 
     const username = document.getElementById("createUsername").value;
     const password= document.getElementById("createPassword").value;
+    const confirmPassword = document.getElementById("createConfirmPassword").value;
+
+    if (password !== confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+    }
 
     const hasCapital = /[A-Z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
