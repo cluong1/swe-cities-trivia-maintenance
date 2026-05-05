@@ -3,12 +3,24 @@ const express = require("express");
 const app = express();
 const port = 3000;
 const mysql = require("mysql2");
+const multer = require('multer');
 const path = require("path");
 const cron = require('node-cron');
 let db; // declare in outer scope
 
 const bcrypt = require('bcrypt');
 const session = require("express-session");
+
+const storage = multer.diskStorage({
+    destination : (req, file, cb) => {
+    cb(null, 'public/uploads');  // where uploaded profile pictures live
+  },
+    filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
 
 app.use(express.json());
 app.use(session({
@@ -255,6 +267,30 @@ app.post("/logout",(req,res)=>{
     });
 });
 
+// Add/Change Profile Picture
+app.get("/changePP",(req,res)=>{
+    res.render("changePP");
+});
+
+app.post('/upload', upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send("No file uploaded.");
+  }
+
+  const imageName = req.file.filename;
+  const username = req.session.user;
+
+  // Update the existing user's ProfilePicture column
+  const sql = "UPDATE users SET ProfilePicture = ? WHERE username = ?";
+
+  db.query(sql, [imageName, username], (err, result) => {
+    if (err) throw err;
+    req.session.userPic = imageName; // update session so it's available immediately
+    res.redirect('/account');
+  });
+});
+
+
 app.get("/", (req, res) => {
     res.render("home");
 });
@@ -444,7 +480,17 @@ app.get("/quiz/id/:id", (req, res) => {
 });
 
 app.get("/account", (req, res) => {
-    res.render("account");
+    const username = req.session.user;
+    if (!username) {
+        return res.render("account", { profilePic: null });
+    }
+
+    const sql = "SELECT ProfilePicture FROM users WHERE username = ?";
+    db.query(sql, [username], (err, results) => {
+        if (err) throw err;
+        const profilePic = results[0] ? results[0].ProfilePicture : null;
+        res.render("account", { profilePic });
+    });
 });
 
 app.get("/leaderboard", async (req, res) => {
@@ -473,7 +519,7 @@ app.get("/leaderboard", async (req, res) => {
 
         if (search) {
             results = await query(
-                "SELECT username, score FROM scores WHERE username LIKE ? ORDER BY score DESC LIMIT ? OFFSET ?",
+                "SELECT s.username, s.score, u.ProfilePicture FROM scores s LEFT JOIN users u ON s.username = u.username WHERE s.username LIKE ? ORDER BY s.score DESC LIMIT ? OFFSET ?",
                 [`%${search}%`, pageSize, offset]
             );
             countResult = await query(
@@ -482,7 +528,7 @@ app.get("/leaderboard", async (req, res) => {
             );
         } else {
             results = await query(
-                "SELECT username, score FROM scores ORDER BY score DESC LIMIT ? OFFSET ?",
+                "SELECT s.username, s.score, u.ProfilePicture FROM scores s LEFT JOIN users u ON s.username = u.username ORDER BY s.score DESC LIMIT ? OFFSET ?",
                 [pageSize, offset]
             );
             countResult = await query("SELECT COUNT(*) AS count FROM scores");
