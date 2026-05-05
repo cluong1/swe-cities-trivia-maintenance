@@ -6,6 +6,20 @@ document.getElementById("accountSubmissionForm")?.addEventListener("submit",asyn
     const username = document.getElementById("createUsername").value;
     const password= document.getElementById("createPassword").value;
 
+    const hasCapital = /[A-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSymbol = /[._!-]/.test(password);
+
+
+    if (!hasCapital || !hasNumber || !hasSymbol) {
+        let errors = [];
+        if (!hasCapital) errors.push("at least one capital letter");
+        if (!hasNumber) errors.push("at least one number");
+        if (!hasSymbol) errors.push("and at least one of these symbols:  . _ ! -");
+        alert("Password must contain " + errors.join(", "));
+        return;
+    }   
+
     //post request to server.js
     const res=await fetch("/register", {
         method: "POST",
