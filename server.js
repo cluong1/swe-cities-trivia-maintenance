@@ -11,6 +11,9 @@ let db; // declare in outer scope
 const bcrypt = require('bcrypt');
 const session = require("express-session");
 
+/** Must match DB username column length and public/javascript/account.js */
+const MAX_USERNAME_LENGTH = 50;
+
 const storage = multer.diskStorage({
     destination : (req, file, cb) => {
     cb(null, 'public/uploads');  // where uploaded profile pictures live
@@ -62,8 +65,18 @@ app.use(express.urlencoded({ extended: true }));
 app.post("/register", async(req,res) =>{
     const { username, password } =req.body;
 
-    if(!username || !password) {
+    if (password === undefined || password === null || String(password) === "") {
         return res.status(400).send("Missing Fields.");
+    }
+
+    const name = typeof username === "string" ? username.trim() : "";
+    if (name === "") {
+        return res.status(400).send("Missing Fields.");
+    }
+    if (name.length > MAX_USERNAME_LENGTH) {
+        return res.status(400).send(
+            `Username too long (max ${MAX_USERNAME_LENGTH} characters).`
+        );
     }
 
     try{
@@ -71,7 +84,7 @@ app.post("/register", async(req,res) =>{
         const hashedPassword = await bcrypt.hash(password,10);
 
         db.query("INSERT INTO users (username, password) VALUES(?, ?)",
-        [username, hashedPassword],
+        [name, hashedPassword],
         (err) =>{
             if(err) {
                 console.error(err); // log real error
@@ -83,7 +96,7 @@ app.post("/register", async(req,res) =>{
             return res.status(500).send("Database error");
                     }
             
-            req.session.user = username; 
+            req.session.user = name; 
             req.session.IsAdmin = false;
             
             res.send("registered successfully");

@@ -1,11 +1,22 @@
+/** Keep in sync with server.js MAX_USERNAME_LENGTH */
+const MAX_USERNAME_LENGTH = 50;
 
 //Handle registering accounts
 document.getElementById("accountSubmissionForm")?.addEventListener("submit",async(e)=>{
     e.preventDefault();
 
-    const username = document.getElementById("createUsername").value;
+    const username = document.getElementById("createUsername").value.trim();
     const password= document.getElementById("createPassword").value;
     const confirmPassword = document.getElementById("createConfirmPassword").value;
+
+    if (!username) {
+        alert("Please enter a username.");
+        return;
+    }
+    if (username.length > MAX_USERNAME_LENGTH) {
+        alert(`Username is too long (max ${MAX_USERNAME_LENGTH} characters).`);
+        return;
+    }
 
     if (password !== confirmPassword) {
         alert("Passwords do not match.");
