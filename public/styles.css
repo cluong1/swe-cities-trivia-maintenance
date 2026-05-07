@@ -237,7 +237,8 @@ body {
         border-radius: 10px;
         box-shadow: 0 3px 8px rgba(0,0,0,0.1);
         transition: transform 0.15s ease;
-        justify-content: center;
+        max-width: 500px;
+        margin: 0 auto;
     }
 
     .leaderboard-item:hover {
