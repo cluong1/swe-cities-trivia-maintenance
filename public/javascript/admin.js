@@ -155,6 +155,9 @@ createQuizForm.onsubmit = async e => {
     console.log(region.value);
     //reload quizzes
     loadQuizzes();
+
+    // Reset the quiz title input
+    quizTitle.value = "";
 };
 
 // -------------------------
