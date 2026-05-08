@@ -12,7 +12,7 @@ const bcrypt = require('bcrypt');
 const session = require("express-session");
 
 /** Must match DB username column length and public/javascript/account.js */
-const MAX_USERNAME_LENGTH = 50;
+const MAX_USERNAME_LENGTH = 20;
 
 const storage = multer.diskStorage({
     destination : (req, file, cb) => {

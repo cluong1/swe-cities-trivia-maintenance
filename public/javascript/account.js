@@ -1,5 +1,5 @@
 /** Keep in sync with server.js MAX_USERNAME_LENGTH */
-const MAX_USERNAME_LENGTH = 50;
+const MAX_USERNAME_LENGTH = 20;
 
 //Handle registering accounts
 document.getElementById("accountSubmissionForm")?.addEventListener("submit",async(e)=>{

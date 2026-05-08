@@ -59,6 +59,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    function highlightCorrectAnswer() {
+        answerButtons.forEach(btn => {
+            if (btn.textContent === correctAnswer) {
+                btn.classList.add("correct-btn");
+            }
+        });
+    }
+
     // -------------------------
     // START QUIZ
     // -------------------------
@@ -110,6 +118,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 clearInterval(timer);
                 output.textContent = "Time Over!";
                 disableButtons();
+                highlightCorrectAnswer();
+                showWrongX();
 
                 setTimeout(() => {
                     nextQuestion();
@@ -135,12 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
             showWrongX();
         }
 
-        // ALWAYS highlight the correct answer
-        answerButtons.forEach(btn => {
-            if (btn.textContent === correctAnswer) {
-                btn.classList.add("correct-btn");
-            }
-        });
+        highlightCorrectAnswer();
 
         // If correct answer selected
         if (selected === correctAnswer) {

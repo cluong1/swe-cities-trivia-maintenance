@@ -135,7 +135,20 @@ function showQuestion() {
       timerActive = false;
       clearInterval(timer);
       output.textContent = "TIME OVER";
-      setTimeout(animateNextQuestion, 300);
+
+      answerBox1.disabled = true;
+      answerBox2.disabled = true;
+      answerBox3.disabled = true;
+      answerBox4.disabled = true;
+
+      [answerBox1, answerBox2, answerBox3, answerBox4].forEach(btn => {
+        if (btn.textContent === correctAnswer) {
+          btn.classList.add("correct-btn");
+        }
+      });
+      showWrongX();
+
+      setTimeout(animateNextQuestion, 1000);
     }
   }, 1000);
 
